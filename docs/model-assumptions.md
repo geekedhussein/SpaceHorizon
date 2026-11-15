@@ -5,8 +5,8 @@ number in the game is not taken directly from a published source, it must appear
 this page. A unit test checks that every content entry marked `"estimated": true` is
 listed here by its id.
 
-Status: covers the starter content (build step 1). The physics and simulation
-sections will be added with build steps 2 and 3.
+Status: covers the starter content (build step 1) and the physics module (build
+step 2, section 5). The simulation section will be added with build step 3.
 
 ## 1. Estimated content entries
 
@@ -89,3 +89,118 @@ game and may change during balancing.
 - Ground stations, random events, antennas and thermal parts have no content yet.
 - Development time per component is not recorded yet.
 - The real-mission comparison holds one mission (Landsat 9) inside the scenario entry.
+
+## 5. Physics model
+
+The equations live in `client/src/lib/physics`. Each function carries its formula and
+reference in a comment. This section lists what each one leaves out.
+
+### Conventions
+
+- **Units.** SI base units and radians inside the module. Content files use km,
+  degrees and days; they are converted at the boundary.
+- **Earth is a sphere of its equatorial radius** (6378.137 km) for altitude, eclipse,
+  slant range and station contact. Earth's real polar radius is 21 km smaller.
+- **Earth's GM** is the JPL DE440 value, not the rounded NASA fact-sheet value.
+- **Textbook references** (Vallado, the New SMAD, Curtis) are cited by title and topic.
+  Page and equation numbers were not checked against a printed copy.
+
+### Orbit
+
+- **Two-body motion** plus the long-term J2 drift of the orbit plane. No other
+  disturbances. The period does not include J2 or drag.
+- **Circular orbits** for eclipse, ground speed, contact and drag.
+- **Eclipse.** Earth's shadow is a cylinder: no half-shadow edge, no bending of light by
+  the air. The default Sun angle (beta = 0) is the worst case, the longest eclipse.
+  How beta changes through the year is not modelled yet (step 3).
+- **Ground speed** ignores Earth's rotation (the ground moves at up to 0.47 km/s at
+  the equator, about 7% of the result in low orbit).
+- **Sun-synchronous inclination** uses the first-order J2 formula. It gives 98.21
+  degrees at 705 km (Landsat 9 publishes 98.2) and 98.54 at 786 km (Sentinel-2
+  publishes 98.62). A unit test holds every sun-synchronous orbit in `/content` to
+  within 0.1 degree of the formula.
+- **Hohmann transfer** assumes two instant burns between circular orbits in the same
+  plane. This does not describe a low-thrust electric thruster such as
+  `thruster-enpulsion-nano`, which spirals slowly. A low-thrust transfer is not
+  modelled yet.
+
+### Propulsion
+
+- **Ideal rocket equation**: constant specific impulse, no losses.
+
+### Power
+
+- **Solar array output** = power when new and facing the Sun x sunlight strength x
+  cosine of the Sun angle x yearly fade. No temperature effect, no shadowing by the
+  spacecraft's own body.
+- **Orbit-average power** assumes zero generation in eclipse and steady output in
+  sunlight.
+- **Battery sizing** uses one load for the whole eclipse and a single efficiency.
+- **Values not chosen yet** (they need sources, step 3): yearly solar-cell fade,
+  allowed depth of discharge, charge and discharge efficiencies.
+
+### Communications
+
+- **Link budget** counts free-space loss plus one lumped figure for all other losses.
+  No rain or air model, no Doppler shift.
+- **Slant range** is taken on a spherical Earth.
+- **Values not chosen yet** (they need sources, step 3 and the ground-station
+  content): station G/T, spacecraft antenna gain, required Eb/N0, margin, other
+  losses, minimum elevation.
+
+### Ground-station contact and coverage
+
+- **Contact fraction is a long-run average**, our own derivation from spherical
+  geometry (the comment in `coverage.ts` gives it in full). It assumes the ground
+  track does not repeat exactly, so the station sees the orbit from every longitude
+  over time. It does not give the time or length of any single pass. Checked against
+  two cases with exact answers (equatorial orbit with an equatorial station; polar
+  orbit with a station at the pole).
+- **Longest pass** ignores Earth's rotation during the pass.
+- **Several stations** are not combined yet; overlapping views would be counted twice.
+- **Pixel size and strip width grow in proportion to altitude** (flat ground under the
+  camera, camera looking straight down).
+- **Revisit time** = equator length / strip width x orbital period. One imaging pass
+  per orbit (the sunlit half), strips side by side with no overlap, no pointing to the
+  side, no cloud. For Landsat 9 (705 km, 185 km strip) this gives 14.9 days; the real
+  cycle is 16 days because neighbouring strips overlap.
+
+### Thermal
+
+- **Equilibrium temperature** treats the spacecraft as a sphere at one temperature,
+  always in sunlight and heated only by the Sun. Heat from Earth, sunlight reflected
+  by Earth and heat from the electronics are left out of the sphere formula. The
+  general function takes any absorbed power, so they can be added later.
+- **Check values.** NASA's fact sheet for Mars is reproduced (209.8 K). For Earth the
+  fact sheet's own sunlight and albedo give 255.1 K, while the sheet prints 254.0 K;
+  the test allows 1.5 K.
+- **Radiation dose class** by orbit is not modelled yet.
+
+### Drag and lifetime
+
+- **Model.** The density and decay equations of "Satellite Orbital Decay
+  Calculations" (IPS Radio and Space Services, Australian Space Weather Agency). The
+  paper says even the best predictions are good to about 10% of the remaining
+  lifetime.
+- **Altitude range.** The density fit is stated for 180 to 500 km. `landsat-705` and
+  `sentinel2-786` are above it. There the model is extrapolated and the result is
+  flagged `extrapolated`. Above 500 km the game should only use it to say "longer than
+  the mission", never to quote a lifetime. Above 1000 km the function refuses to run.
+- **Constant space weather** (solar radio flux F10.7 and geomagnetic index Ap) for the
+  whole mission. The values to use are not chosen yet (step 3, with a source).
+- **Effective area** = cross-section x drag coefficient, both constant. The paper
+  suggests a drag coefficient of about 2. The spacecraft's cross-section is not
+  defined yet (step 3).
+- **Re-entry** is declared at 180 km, as in the paper.
+- **Difference from the paper's printed example.** The paper prints re-entry after
+  45.7 days for its example (100 kg, 1 m2, 300 km). Its program takes the cube root
+  as `^ .33333`, which lowers the orbit by about 1 km on the first step. Re-running
+  the listing reproduces 45.7 days exactly; with an exact cube root the same equations
+  give 47.1 days. The game uses the exact cube root.
+
+### Not in the physics module yet
+
+- Position along the orbit over time (Kepler propagation) belongs to `/lib/orbit`,
+  build step 4.
+- The launch mass check against a launcher's published capacity is a constraint
+  check, build step 3.

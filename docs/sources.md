@@ -13,7 +13,10 @@ All sources below were read on 2026-11-15 unless noted.
 | --- | --- |
 | [International Space Station FAQ](https://www.nasa.gov/international-space-station-frequently-asked-questions/) | `iss-like` orbit: inclination 51.6 degrees, altitude 370 to 460 km |
 | [International Space Station reference](https://www.nasa.gov/reference/international-space-station/) | Cross-check of the same figures |
-| [Landsat 9 mission page](https://science.nasa.gov/mission/landsat-9) | `landsat-705` orbit (705 km, 98.2 degrees, 10:12 crossing, 16-day repeat); 30 m pixels and 185 km strip width for the scenario and the real-mission fact |
+| [Landsat 9 mission page](https://science.nasa.gov/mission/landsat-9) | `landsat-705` orbit (705 km, 98.2 degrees, 10:12 crossing, 16-day repeat); 30 m pixels and 185 km strip width for the scenario and the real-mission fact; check case for the revisit formula |
+| [Earth Fact Sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html), D. R. Williams, NSSDCA, updated 15 Nov 2024 | Physics constants: equatorial and mean radius, J2, solar irradiance, sidereal rotation period, tropical year, obliquity. Check case: black-body temperature and Bond albedo |
+| [Mars Fact Sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html), D. R. Williams, NSSDCA, updated 19 May 2025 | Check cases for the physics tests: solar irradiance at Mars, black-body temperature, Bond albedo, distance from the Sun |
+| [Astrodynamic Parameters](https://ssd.jpl.nasa.gov/astro_par.html), JPL Solar System Dynamics | Physics constants: Earth's GM (DE440), the astronomical unit, the length of the day |
 
 Design references named in CLAUDE.md (methods, not data):
 
@@ -70,6 +73,24 @@ Design references named in CLAUDE.md (methods, not data):
 | [satsearch, arcsec Arcus ADCS](https://satsearch.co/products/arcsec-arcus-adcs) | `adcs-arcsec-arcus` |
 | satsearch.co, Space Inventor WHL-100 reaction wheel (list price) | Price comparison for `adcs-arcsec-arcus` |
 | [satsearch, ENPULSION NANO](https://satsearch.co/products/enpulsion-enpulsion-nano) | `thruster-enpulsion-nano` |
+
+## Physics model
+
+Constants from NASA and JPL are listed under NASA resources above.
+
+| Resource | Used for |
+| --- | --- |
+| [CODATA 2022 recommended values](https://physics.nist.gov/cuu/Constants/Table/allascii.txt), NIST | Speed of light, Boltzmann constant, Stefan-Boltzmann constant, standard gravity |
+| [Satellite Orbital Decay Calculations](https://www.sws.bom.gov.au/Category/Educational/Space%20Weather/Space%20Weather%20Effects/SatelliteOrbitalDecayCalculations.pdf), IPS Radio and Space Services, The Australian Space Weather Agency | Air density model, drag decay equation and the worked example used as a test |
+| [Hohmann transfer orbit](https://en.wikipedia.org/wiki/Hohmann_transfer_orbit), Wikipedia (CC BY-SA 4.0) | Worked example (low orbit to geostationary) used as a test for the speed and transfer functions |
+| [Free-space path loss](https://en.wikipedia.org/wiki/Free-space_path_loss), Wikipedia (CC BY-SA 4.0) | Engineering form of the path-loss formula used as a test |
+| D. A. Vallado, *Fundamentals of Astrodynamics and Applications* | Standard reference for J2 nodal precession, sun-synchronous orbits and the Hohmann transfer |
+| J. R. Wertz, D. F. Everett, J. J. Puschell (eds.), *Space Mission Engineering: The New SMAD* | Standard reference for eclipse duration, solar array and battery sizing, the link equation, Earth coverage geometry and thermal balance |
+| H. D. Curtis, *Orbital Mechanics for Engineering Students* | Standard reference for Kepler's third law, the vis-viva equation and the rocket equation |
+
+The three textbooks are cited by title and topic. Page and equation numbers were not
+checked against a printed copy; each formula is instead checked by a unit test against
+a published figure or a hand calculation.
 
 ## Other figures
 
