@@ -5,8 +5,8 @@ number in the game is not taken directly from a published source, it must appear
 this page. A unit test checks that every content entry marked `"estimated": true` is
 listed here by its id.
 
-Status: covers the starter content (build step 1) and the physics module (build
-step 2, section 5). The simulation section will be added with build step 3.
+Status: covers the starter content (build step 1), the physics module (build step 2,
+section 5) and the simulation, checks and scoring (build step 3, section 6).
 
 ## 1. Estimated content entries
 
@@ -66,6 +66,16 @@ game and may change during balancing.
     1,986 GB, uncompressed, rounded to 2,000. The threshold was 500 GB (two bands)
     before the simulation existed. The cameras in the game always record all 8 bands,
     so 500 GB did not correspond to a full map.
+- **Difficulty margins** (`sim/parameters.ts`). Spare launch capacity and spare solar
+  power required: 0% at Concept, 10% at Trade study, 20% at Point design. Random event
+  chances are multiplied by 0, 1 and 2.
+- **Link margin** of 3 dB kept in every link budget.
+- **Score weights.** Solo: requirements 55, survival 25, efficiency 20. Team:
+  50, 20, 20, and 10 for collaboration.
+- **Sensible margin.** A spare share of power or downlink up to 50% earns full
+  efficiency marks. Beyond that the marks fall in a straight line to zero at 200%.
+- **Efficiency scaling.** The efficiency part is multiplied by the requirements part,
+  so a cheap mission that achieves nothing earns nothing for being cheap.
 
 ## 3. Deliberate approximations in the content
 
@@ -152,17 +162,16 @@ reference in a comment. This section lists what each one leaves out.
 - **Orbit-average power** assumes zero generation in eclipse and steady output in
   sunlight.
 - **Battery sizing** uses one load for the whole eclipse and a single efficiency.
-- **Values not chosen yet** (they need sources, step 3): yearly solar-cell fade,
-  allowed depth of discharge, charge and discharge efficiencies.
+- The yearly fade, allowed depth of discharge and battery efficiency are chosen in
+  section 6.
 
 ### Communications
 
 - **Link budget** counts free-space loss plus one lumped figure for all other losses.
   No rain or air model, no Doppler shift.
 - **Slant range** is taken on a spherical Earth.
-- **Values not chosen yet** (they need sources, step 3 and the ground-station
-  content): station G/T, spacecraft antenna gain, required Eb/N0, margin, other
-  losses, minimum elevation.
+- Station G/T and antenna gains come from `/content`. The required Eb/N0, margin
+  and minimum elevation are chosen in section 6.
 
 ### Ground-station contact and coverage
 
@@ -203,10 +212,10 @@ reference in a comment. This section lists what each one leaves out.
   flagged `extrapolated`. Above 500 km the game should only use it to say "longer than
   the mission", never to quote a lifetime. Above 1000 km the function refuses to run.
 - **Constant space weather** (solar radio flux F10.7 and geomagnetic index Ap) for the
-  whole mission. The values to use are not chosen yet (step 3, with a source).
+  whole mission. The values are chosen in section 6.
 - **Effective area** = cross-section x drag coefficient, both constant. The paper
-  suggests a drag coefficient of about 2. The spacecraft's cross-section is not
-  defined yet (step 3).
+  suggests a drag coefficient of about 2. The spacecraft's cross-section is defined
+  in section 6.
 - **Re-entry** is declared at 180 km, as in the paper.
 - **Difference from the paper's printed example.** The paper prints re-entry after
   45.7 days for its example (100 kg, 1 m2, 300 km). Its program takes the cube root
@@ -218,5 +227,119 @@ reference in a comment. This section lists what each one leaves out.
 
 - Position along the orbit over time (Kepler propagation) belongs to `/lib/orbit`,
   build step 4.
-- The launch mass check against a launcher's published capacity is a constraint
-  check, build step 3.
+
+## 6. Simulation, checks and scoring
+
+The code lives in `client/src/lib/sim`. Engineering parameters and game-design
+settings are in `parameters.ts`, each with its source in a comment.
+
+### Engineering parameters
+
+| Parameter | Value | Basis | Approximation |
+| --- | --- | --- | --- |
+| Lowest elevation used at a station | 10 degrees | Near Earth Network Users' Guide, section 17.5: X-band quality is not guaranteed below 10 degrees | Applied to every band and station |
+| Required Eb/N0 | 9.6 dB | Uncoded BPSK or QPSK at a bit error rate of 1e-5, from the standard formula; checked by a unit test | No error-correcting code, which is conservative. Real radios use coding |
+| Solar array fade | 1.03% a year | Lohmeyer et al. 2018: 0.44% to 1.03% a year measured on geostationary satellites | Top of the range. Geostationary data applied to low Earth orbit |
+| Allowed depth of discharge | 40% | Knap, Vestergaard and Stroe 2020, Table 6: 10% to 40% in low Earth orbit | Top of the range. Battery wear over time is not modelled |
+| Battery round-trip efficiency | 90% | NASA Small Spacecraft State of the Art report 2022, Table 3-6: 75% to 90% for lithium-ion | Top of the range |
+| Solar radio flux F10.7, index Ap | 125 sfu, 13 | Long-run means of the GFZ Potsdam daily index file (124.9 and 13.3) | Held constant. The real values swing with the 11-year solar cycle, and so does drag |
+| Drag coefficient | 2 | Suggested by the IPS orbital decay paper | Constant |
+| Land share of Earth's surface | 29.2% | 148.94 million km2 over the sphere's area | |
+
+### Time stepping
+
+- **One step is one day.** Every quantity is an average over the day's orbits. Single
+  eclipses and passes are not stepped; their effect is in the averages.
+- **The orbit figures are fixed at the starting altitude** (period, eclipse, pass
+  length, ground speed). Only drag follows the falling altitude.
+- **Planned lifetime** is the scenario's years x 365.25, rounded to whole days.
+- **Eclipse** is the worst case for every orbit: the Sun in the orbit plane.
+
+### Mass, structure and cost
+
+- **Mass** is the sum of the parts plus each radio's antenna. It stays constant;
+  used propellant is not subtracted.
+- **No structural margin.** The CubeSat mass limit is the frame maker's figure.
+- **Fit** is checked by form factor and by instrument volume in units only. The 3D
+  fit inside the fairing comes with the builder (build step 5).
+- **Cost** = parts + launch + ground passes for the whole planned life. Development,
+  staff and operations are not costed. Passes are paid for even if the mission ends
+  early.
+
+### Power
+
+- **With attitude control** the array faces the Sun to within the pointing accuracy.
+- **Without it** the spacecraft tumbles and a flat array catches 1/4 of full sunlight
+  on average (the mean of the cosine over all directions, counting only the lit side).
+- **Loads.** Computer, attitude control and standby draws are always on. Cameras
+  draw extra only while imaging, radios only while sending, and the thruster only
+  while firing in sunlight.
+- **Load shedding.** If the array cannot carry everything, imaging is cut first, then
+  sending, then the thruster. If it cannot carry the always-on parts, the mission
+  ends that day. Real spacecraft can often recover from a power loss; the game's
+  cannot.
+- **Battery.** It must carry the always-on parts through one eclipse. If one full
+  pass of sending in eclipse would go past the allowed depth, the radio only sends
+  in sunlight, which cuts the sending time by the eclipse share.
+- **No battery, or one too small for the eclipse**, ends the mission in the first
+  eclipse.
+
+### Communications and data
+
+- **Link rate** is worked out at the lowest elevation, where the signal is weakest,
+  and used for the whole pass. The rate is the lower of that and the radio's limit.
+- **One radio per station**: the fastest one the station can hear.
+- **Average pass** = pi/4 of the overhead pass (the mean chord of a circle).
+- **Passes on offer** = long-run contact share of the day / average pass. Booking
+  more gives no more.
+- **Several stations** are added up. Overlapping views are not removed.
+- **The radio sends for the whole of every booked pass.**
+- **Commands.** Taking pictures needs a command link: a two-way radio that a booked
+  station hears. Without one the cameras stay off. Real spacecraft can run stored
+  schedules for a while; the game does not model that.
+- **Camera data rate** scales with ground speed over pixel size, from the maker's
+  figure at 500 km. Data is uncompressed.
+- **Storage** is the computer's plus the cameras' own. Data that does not fit is lost,
+  oldest and newest alike.
+
+### Science return
+
+- **Imaging time** is set by the player, up to the time spent over sunlit land. That
+  is taken as half the day x the land share. Land is treated as spread evenly, and
+  clouds, seasons and polar night are ignored.
+- **Revisit time** is the larger of two limits: the days for neighbouring ground
+  tracks to close up at the equator with the camera's swath, and the days to image
+  all land once with the pictures that reached the ground. No overlap between strips
+  and no off-nadir pointing.
+- **Resolution** is the camera's pixel size scaled by altitude, straight down.
+- **Requirements are judged on one camera**: the one that serves the objective best.
+- **Pointing accuracy** only affects the Sun angle of the array. Its effect on image
+  quality is not modelled, so the precise attitude unit has no science advantage yet.
+
+### Drag and lifetime
+
+- **Cross-section** is the average shadow of a tumbling body: a quarter of the frame's
+  surface area (Cauchy's formula) plus half the deployed panel area. The same value is
+  used when the spacecraft is pointed.
+- **Thruster.** It fires only in sunlight and cancels as much of the drag as its
+  thrust, power and propellant allow. It needs attitude control to aim.
+- **Above 500 km** the density model is extrapolated (see section 5).
+
+### Random events
+
+- **Chance.** Each event has a chance per year, turned into a chance per day and
+  multiplied by the difficulty factor.
+- **Launch failure** chance = 1 - successes / attempts from the launcher's published
+  record. Off at Concept level.
+- **Effects** available: station outage, safe mode, permanent array damage. The
+  events themselves, and what mitigates them, are content for build step 8. The
+  tests use labelled fixtures, not real figures.
+- **The random sequence does not depend on the design**, so two designs with the same
+  seed meet the same events.
+
+### Not modelled yet
+
+- Thermal balance and radiation dose (level 2 and above).
+- Battery wear and component failure rates.
+- Development time.
+- Land coverage by latitude, and stations seen through a real pass schedule.

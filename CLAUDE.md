@@ -331,8 +331,10 @@ for Sun-synchronous orbits, since that orbit type does not exist without it.
       /stores       Svelte stores: design, room, ui
       /components   resource bars, part picker, requirement list, timeline, report
     /routes or /views   one view per phase
+  /tests            Node-only test support (loads /content for the unit tests)
   /static
-/content            JSON: components, instruments, launchers, orbits, scenarios, events
+/content            JSON: components, instruments, launchers, orbits, ground_stations,
+                    scenarios, events
   /schemas          JSON Schema for each content file
   README.md         editing guide for non-coders
 /server

@@ -16,6 +16,9 @@ All sources below were read on 2026-11-15 unless noted.
 | [Landsat 9 mission page](https://science.nasa.gov/mission/landsat-9) | `landsat-705` orbit (705 km, 98.2 degrees, 10:12 crossing, 16-day repeat); 30 m pixels and 185 km strip width for the scenario and the real-mission fact; check case for the revisit formula |
 | [Earth Fact Sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html), D. R. Williams, NSSDCA, updated 15 Nov 2024 | Physics constants: equatorial and mean radius, J2, solar irradiance, sidereal rotation period, tropical year, obliquity. Check case: black-body temperature and Bond albedo |
 | [Mars Fact Sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html), D. R. Williams, NSSDCA, updated 19 May 2025 | Check cases for the physics tests: solar irradiance at Mars, black-body temperature, Bond albedo, distance from the Sun |
+| [Near Earth Network (NEN) Users' Guide](https://explorers.larc.nasa.gov/2021APMIDEX/pdf_files/453-UG-002905.pdf), 453-NENUG Revision 4, NASA Goddard | Ground stations: sites, coordinates, bands and G/T; the 10 degree lowest elevation (section 17.5) |
+| [SCaN Mission Operations and Communications Services (MOCS)](https://soma.larc.nasa.gov/simplex/pdf_files/SCaN-MOCS-0001_Rev-1.pdf), SCaN-MOCS-0001 Revision 1, Table 5-2 | Ground-station price per pass (US$491, 2018) |
+| NASA Small Spacecraft Technology State of the Art report 2022, power chapter, Table 3-6 | Lithium-ion battery efficiency |
 | [Astrodynamic Parameters](https://ssd.jpl.nasa.gov/astro_par.html), JPL Solar System Dynamics | Physics constants: Earth's GM (DE440), the astronomical unit, the length of the day |
 
 Design references named in CLAUDE.md (methods, not data):
@@ -87,6 +90,12 @@ Constants from NASA and JPL are listed under NASA resources above.
 | D. A. Vallado, *Fundamentals of Astrodynamics and Applications* | Standard reference for J2 nodal precession, sun-synchronous orbits and the Hohmann transfer |
 | J. R. Wertz, D. F. Everett, J. J. Puschell (eds.), *Space Mission Engineering: The New SMAD* | Standard reference for eclipse duration, solar array and battery sizing, the link equation, Earth coverage geometry and thermal balance |
 | H. D. Curtis, *Orbital Mechanics for Engineering Students* | Standard reference for Kepler's third law, the vis-viva equation and the rocket equation |
+
+| [Phase-shift keying](https://en.wikipedia.org/wiki/Phase-shift_keying), Wikipedia (CC BY-SA 4.0) | Bit error rate formula for BPSK and QPSK, giving the required Eb/N0 of 9.6 dB |
+| W. Lohmeyer et al., "Solar array degradation of geostationary communications satellites", Int. J. Space Science and Engineering 5(1), 2018, DOI 10.1504/IJSPACESE.2018.090549 | Yearly solar array fade |
+| V. Knap, L. K. Vestergaard, D.-I. Stroe, Energies 13, 4097 (2020), Table 6 | Battery depth of discharge in low Earth orbit |
+| J. Matzka et al., "The geomagnetic Kp index and derived indices of geomagnetic activity", Space Weather 2021, [DOI 10.1029/2020SW002641](https://doi.org/10.1029/2020SW002641); GFZ Potsdam daily index file (CC BY 4.0) | Long-run mean F10.7 and Ap for the drag model |
+| [Mulberry32](https://gist.github.com/tommyettinger/46a874533244883189143505d203312c), T. Ettinger; JavaScript form from [bryc/code](https://github.com/bryc/code/blob/master/jshash/PRNGs.md) (public domain) | Seeded random number generator |
 
 The three textbooks are cited by title and topic. Page and equation numbers were not
 checked against a printed copy; each formula is instead checked by a unit test against
