@@ -334,7 +334,7 @@ for Sun-synchronous orbits, since that orbit type does not exist without it.
   /tests            Node-only test support (loads /content for the unit tests)
   /static
 /content            JSON: components, instruments, launchers, orbits, ground_stations,
-                    scenarios, events
+                    scenarios, ready_designs, events (events: later version)
   /schemas          JSON Schema for each content file
   README.md         editing guide for non-coders
 /server

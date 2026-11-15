@@ -2,7 +2,7 @@
 // it lives outside /src and is never part of the client bundle.
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import type { Catalog, Design, Scenario } from '../src/lib/sim/types.ts'
+import type { Catalog, Design, ReadyDesign, Scenario } from '../src/lib/sim/types.ts'
 
 const contentDir = new URL('../../content/', import.meta.url)
 
@@ -19,6 +19,7 @@ export const catalog: Catalog = {
 }
 
 export const scenarios = readJson<Scenario[]>('scenarios')
+export const readyDesigns = readJson<ReadyDesign[]>('ready_designs')
 
 export function scenario(id: string): Scenario {
   const found = scenarios.find((entry) => entry.id === id)

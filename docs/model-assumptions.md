@@ -439,6 +439,16 @@ The shapes come from `scene3d/builderModel.ts`, which is unit-tested.
   plus the last. The slider and the day readout use every day.
 - **Solo seed.** Each solo launch draws a fresh seed in the browser. In a room the
   server issues it.
+- **Ready-made designs** (`content/ready_designs.json`). Combinations of real parts
+  from `/content`, not new data. They were found by trying 155,520 designs for
+  `vegetation-monthly`: every orbit, launcher, frame, array, battery, pointing unit
+  and thruster choice, five radio sets, each camera, six station sets, passes set
+  to what the orbit offers, and imaging at half, three quarters and all of what the
+  link can carry. 94 passed every check at Point design; four were picked to show
+  different trade-offs. `content/readyDesigns.test.ts` checks that each still
+  passes every check at every level and meets every requirement, and that what
+  each card says about itself (cheapest, lightest, more data) stays true. In a
+  team, picking one fills in only the parts the player's roles own.
 
 ### Team play
 
@@ -485,9 +495,9 @@ scores. These are game-design values, not real-world data.
   Hiding advanced parts would make the level unwinnable, so nothing is hidden. To
   restore a reduced catalogue, either re-tier the parts or add a scenario that
   simple parts can pass.
-- **No random events yet.** `events.json` does not exist (build step 8). At Trade
-  study and Point design the only chance event is a launch failure, from the
-  launcher's published record.
+- **No random events in this version.** `events.json` does not exist; random events
+  are planned for a later version. At Trade study and Point design the only chance
+  event is a launch failure, from the launcher's published record.
 - **Point design unlock** is remembered in the browser's local storage only. It is
   earned by meeting every requirement at Trade study with sandbox off.
 

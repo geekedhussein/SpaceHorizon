@@ -605,6 +605,23 @@ export const uiText = {
 
   design: {
     intro: 'Every choice costs mass, power and money. Watch the resource bars as you build.',
+    ready: {
+      title: 'Start from a ready-made design',
+      intro: 'Each one passes every pre-launch check. Pick one to fill in the whole mission, then change any part you like. Each one gives up something to gain something else.',
+      use: 'Use this design',
+      inUse: 'In use',
+      gives: 'Trade-off:',
+      changesOrbit: 'This changes your orbit to {orbit}.',
+      facts: {
+        launcher: 'Launched on {launcher}',
+        cost: 'Costs {cost} of {budget}',
+        mass: '{kg} kg',
+        score: 'Forecast score {points} of 100',
+      },
+      failsHere: 'Does not pass the checks at this level: {checks}.',
+      replaced: 'Design filled in. The resource bars and the forecast below show how it does.',
+      teamPart: 'Filled in your own parts. {count} other parts belong to other roles; ask them to match.',
+    },
     tabsLabel: 'Mission parts',
     tabs: { space: 'Spacecraft', launch: 'Launch', ground: 'Ground' },
     slots: {

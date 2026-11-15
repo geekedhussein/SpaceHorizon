@@ -4,6 +4,7 @@
   import { catalog } from '../lib/content/index.ts'
   import LockNote from '../lib/components/LockNote.svelte'
   import OptionCard from '../lib/components/OptionCard.svelte'
+  import ReadyDesigns from '../lib/components/ReadyDesigns.svelte'
   import RequirementList from '../lib/components/RequirementList.svelte'
   import type {
     Component,
@@ -112,6 +113,8 @@
 </script>
 
 <p>{text.intro}</p>
+
+<ReadyDesigns />
 
 <div class="tabs" role="tablist" aria-label={text.tabsLabel}>
   {#each TABS as id (id)}

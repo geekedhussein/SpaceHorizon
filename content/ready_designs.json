@@ -1,0 +1,97 @@
+[
+  {
+    "id": "low-orbit-low-cost",
+    "scenario_id": "vegetation-monthly",
+    "name": "Low orbit, low cost",
+    "summary": "A 3U CubeSat at 500 km, launched as a rideshare, with one ground station near the North Pole.",
+    "trade_off": "The cheapest design here that meets every requirement. At 500 km the thin air slowly drags the spacecraft down, so it carries a small thruster to keep its height.",
+    "design": {
+      "orbitId": "sso-500",
+      "launcherId": "falcon9-rideshare",
+      "structureId": "structure-3u-isispace",
+      "solarArrayId": "solar-deployable-3u-endurosat",
+      "batteryId": "battery-36wh-orbastro",
+      "computerId": "computer-endurosat-obc",
+      "attitudeControlId": "adcs-tensortech-mtq",
+      "propulsionId": "thruster-enpulsion-nano",
+      "radioIds": ["radio-sband-endurosat", "radio-xband-endurosat"],
+      "instrumentIds": ["imager-multiscape50"],
+      "groundStations": [{ "stationId": "station-svalbard", "passesPerDay": 11.5 }],
+      "imagingMinutesPerDay": 105
+    },
+    "source": "Combination of parts from this folder, chosen by searching every design the catalogue allows. See docs/model-assumptions.md, section 7.",
+    "retrieved": "2026-11-15"
+  },
+  {
+    "id": "more-pictures",
+    "scenario_id": "vegetation-monthly",
+    "name": "More pictures, two stations",
+    "summary": "The same spacecraft, taking pictures for longer each day and sending them down through two ground stations.",
+    "trade_off": "Returns much more data than the requirement asks for, which gives margin if a station is lost. The second station costs about US$2 million more over the mission.",
+    "design": {
+      "orbitId": "sso-500",
+      "launcherId": "falcon9-rideshare",
+      "structureId": "structure-3u-isispace",
+      "solarArrayId": "solar-deployable-3u-endurosat",
+      "batteryId": "battery-36wh-orbastro",
+      "computerId": "computer-endurosat-obc",
+      "attitudeControlId": "adcs-tensortech-mtq",
+      "propulsionId": "thruster-enpulsion-nano",
+      "radioIds": ["radio-sband-endurosat", "radio-xband-endurosat"],
+      "instrumentIds": ["imager-multiscape50"],
+      "groundStations": [
+        { "stationId": "station-svalbard", "passesPerDay": 11.5 },
+        { "stationId": "station-fairbanks", "passesPerDay": 6 }
+      ],
+      "imagingMinutesPerDay": 157
+    },
+    "source": "Combination of parts from this folder, chosen by searching every design the catalogue allows. See docs/model-assumptions.md, section 7.",
+    "retrieved": "2026-11-15"
+  },
+  {
+    "id": "high-orbit-own-rocket",
+    "scenario_id": "vegetation-monthly",
+    "name": "High orbit, own rocket",
+    "summary": "A light 3U CubeSat with no thruster, flown to Landsat's 705 km orbit on its own small rocket.",
+    "trade_off": "At 705 km the air is so thin that the orbit lasts the whole mission without a thruster, so this is the lightest design. No rideshare here goes to that orbit, so the rocket takes most of the budget.",
+    "design": {
+      "orbitId": "landsat-705",
+      "launcherId": "electron",
+      "structureId": "structure-3u-isispace",
+      "solarArrayId": "solar-deployable-3u-endurosat",
+      "batteryId": "battery-36wh-orbastro",
+      "computerId": "computer-endurosat-obc",
+      "attitudeControlId": "adcs-tensortech-mtq",
+      "propulsionId": null,
+      "radioIds": ["radio-sband-endurosat", "radio-xband-endurosat"],
+      "instrumentIds": ["imager-multiscape50"],
+      "groundStations": [{ "stationId": "station-fairbanks", "passesPerDay": 8 }],
+      "imagingMinutesPerDay": 105
+    },
+    "source": "Combination of parts from this folder, chosen by searching every design the catalogue allows. See docs/model-assumptions.md, section 7.",
+    "retrieved": "2026-11-15"
+  },
+  {
+    "id": "roomy-6u",
+    "scenario_id": "vegetation-monthly",
+    "name": "Room to grow, 6U frame",
+    "summary": "The low-orbit design built on a frame twice the size, with bigger fold-out solar wings.",
+    "trade_off": "There is space and power left over for more parts. It weighs more and costs a little more for the same science, so it scores slightly lower.",
+    "design": {
+      "orbitId": "sso-500",
+      "launcherId": "falcon9-rideshare",
+      "structureId": "structure-6u-isispace",
+      "solarArrayId": "solar-deployable-6u-endurosat",
+      "batteryId": "battery-36wh-orbastro",
+      "computerId": "computer-endurosat-obc",
+      "attitudeControlId": "adcs-tensortech-mtq",
+      "propulsionId": "thruster-enpulsion-nano",
+      "radioIds": ["radio-sband-endurosat", "radio-xband-endurosat"],
+      "instrumentIds": ["imager-multiscape50"],
+      "groundStations": [{ "stationId": "station-svalbard", "passesPerDay": 11.5 }],
+      "imagingMinutesPerDay": 105
+    },
+    "source": "Combination of parts from this folder, chosen by searching every design the catalogue allows. See docs/model-assumptions.md, section 7.",
+    "retrieved": "2026-11-15"
+  }
+]

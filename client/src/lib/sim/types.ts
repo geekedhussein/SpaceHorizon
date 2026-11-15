@@ -254,6 +254,16 @@ export interface Design {
   imagingMinutesPerDay: number
 }
 
+/** A complete design from /content/ready_designs.json, for players who would rather not pick every part. */
+export interface ReadyDesign extends Sourced {
+  id: string
+  scenario_id: string
+  name: string
+  summary: string
+  trade_off: string
+  design: Design
+}
+
 export type Difficulty = 'concept' | 'trade-study' | 'point-design'
 
 /** Everything `simulate` needs besides the design, the scenario and the seed. */

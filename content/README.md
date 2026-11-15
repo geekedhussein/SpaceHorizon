@@ -12,6 +12,7 @@ without touching any code.
 | `orbits.json` | Orbits the player can pick |
 | `ground_stations.json` | Dish antennas on the ground that receive the spacecraft's data |
 | `scenarios.json` | Missions, each with its objective and requirements |
+| `ready_designs.json` | Complete designs a player can pick instead of choosing every part |
 | `schemas/` | The rules each file must follow. Edit these only together with the code. |
 
 JSON files cannot hold comments, so the explanations live here and in the
@@ -103,6 +104,18 @@ and time in shadow from these.
   (`<=` or `>=`) and a `threshold`. New metrics need code, so ask before adding one.
 - `budget_musd`, `planned_lifetime_years` and the thresholds are game-design values.
   Record how you chose them in `estimate_basis`.
+
+### Ready-made designs (`ready_designs.json`)
+
+- Each one is a whole mission for one scenario (`scenario_id`). The `design` part
+  uses the same field names as a saved design, and every id must exist in the
+  other files.
+- `summary` says what it is; `trade_off` says what it gains and gives up.
+- The tests fly every ready-made design. They fail if one stops passing a
+  pre-launch check at any level or misses a requirement, so after changing a part's
+  figures, run the tests and fix or replace the design they name.
+- Some tests check what a card says about itself (for example that "Low orbit, low
+  cost" is the cheapest). If you change the wording, change those tests too.
 
 ## Checking your changes
 

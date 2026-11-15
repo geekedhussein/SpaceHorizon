@@ -14,7 +14,7 @@ import type { RoomPath } from '../net/roles.ts'
 import { connectRoom, createRoom, roomExists } from '../net/roomClient.ts'
 import type { ConnectionStatus, RoomConnection } from '../net/roomClient.ts'
 import { checkDesign, isBlocked, simulate } from '../sim/index.ts'
-import type { Design, Difficulty, SimulationResult } from '../sim/index.ts'
+import type { Design, Difficulty, ReadyDesign, SimulationResult } from '../sim/index.ts'
 import { PHASES } from './phases.ts'
 import type { Phase } from './phases.ts'
 
@@ -169,6 +169,23 @@ class Game {
     } catch {
       this.linkStatus = 'failed'
     }
+  }
+
+  /**
+   * Replace the design with a ready-made one. In a team, only the parts this
+   * player's roles own change; returns how many parts were left to others.
+   */
+  useReadyDesign(ready: ReadyDesign): number {
+    let leftToOthers = 0
+    const target = this.design as unknown as Record<string, unknown>
+    for (const [key, value] of Object.entries(ready.design)) {
+      if (!this.canEdit(`design.${key}` as RoomPath)) {
+        if (JSON.stringify(target[key]) !== JSON.stringify(value)) leftToOthers++
+        continue
+      }
+      target[key] = structuredClone(value)
+    }
+    return leftToOthers
   }
 
   // ------------------------------------------------------------- steps ---

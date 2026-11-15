@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ready_designs.schema.json",
+  "title": "Ready-made designs",
+  "description": "Complete missions a player can pick instead of choosing every part. A test checks that each one passes every pre-launch check at every level.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "allOf": [
+      { "$ref": "common.schema.json#/$defs/sourced" },
+      {
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "scenario_id": {
+            "description": "The scenario this design is made for, from scenarios.json.",
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "name": { "$ref": "common.schema.json#/$defs/text" },
+          "summary": {
+            "description": "What the design is, in one sentence.",
+            "$ref": "common.schema.json#/$defs/text"
+          },
+          "trade_off": {
+            "description": "What the design gains and what it gives up.",
+            "$ref": "common.schema.json#/$defs/text"
+          },
+          "design": {
+            "description": "The design itself, in the same shape as a saved design. Ids come from the other content files.",
+            "type": "object",
+            "properties": {
+              "orbitId": { "$ref": "common.schema.json#/$defs/id" },
+              "launcherId": { "$ref": "common.schema.json#/$defs/id" },
+              "structureId": { "$ref": "common.schema.json#/$defs/id" },
+              "solarArrayId": { "anyOf": [{ "$ref": "common.schema.json#/$defs/id" }, { "type": "null" }] },
+              "batteryId": { "anyOf": [{ "$ref": "common.schema.json#/$defs/id" }, { "type": "null" }] },
+              "computerId": { "$ref": "common.schema.json#/$defs/id" },
+              "attitudeControlId": { "anyOf": [{ "$ref": "common.schema.json#/$defs/id" }, { "type": "null" }] },
+              "propulsionId": { "anyOf": [{ "$ref": "common.schema.json#/$defs/id" }, { "type": "null" }] },
+              "radioIds": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/id" }, "uniqueItems": true },
+              "instrumentIds": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/id" }, "uniqueItems": true },
+              "groundStations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stationId": { "$ref": "common.schema.json#/$defs/id" },
+                    "passesPerDay": { "type": "number", "minimum": 0, "maximum": 30 }
+                  },
+                  "required": ["stationId", "passesPerDay"],
+                  "additionalProperties": false
+                }
+              },
+              "imagingMinutesPerDay": { "type": "number", "minimum": 0, "maximum": 1440 }
+            },
+            "required": [
+              "orbitId",
+              "launcherId",
+              "structureId",
+              "solarArrayId",
+              "batteryId",
+              "computerId",
+              "attitudeControlId",
+              "propulsionId",
+              "radioIds",
+              "instrumentIds",
+              "groundStations",
+              "imagingMinutesPerDay"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": ["id", "scenario_id", "name", "summary", "trade_off", "design"]
+      }
+    ],
+    "unevaluatedProperties": false
+  }
+}

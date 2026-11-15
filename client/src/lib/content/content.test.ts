@@ -24,6 +24,7 @@ const FILES = [
   'orbits',
   'scenarios',
   'ground_stations',
+  'ready_designs',
 ] as const
 type FileName = (typeof FILES)[number]
 
@@ -157,6 +158,11 @@ describe('links between content files', () => {
       ),
     )
     expect(heard).toBe(true)
+  })
+
+  it('every ready-made design is for a scenario in scenarios.json', () => {
+    const scenarioIds = content.scenarios.map((scenario) => scenario.id)
+    for (const ready of content.ready_designs) expect(scenarioIds, ready.id).toContain(ready.scenario_id)
   })
 
   it('an instrument that serves no objective says why', () => {
