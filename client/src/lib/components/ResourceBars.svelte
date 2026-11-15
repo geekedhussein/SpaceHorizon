@@ -21,7 +21,7 @@
   }
 </script>
 
-<section class="bars" aria-label={text.title}>
+<section class="bars" aria-label={text.title} data-tour="bars">
   {#each bars as bar (bar.id)}
     {@const entry = text[bar.id]}
     {@const word = statusWord(bar)}

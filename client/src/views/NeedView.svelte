@@ -34,7 +34,7 @@
   {/each}
 </fieldset>
 
-<fieldset>
+<fieldset data-tour="level">
   <legend>{text.levelLabel}</legend>
   <LockNote path="difficulty" />
   {#each LEVELS as level (level)}

@@ -33,7 +33,7 @@
 <h3>{text.missionType}</h3>
 <p>{text.missionTypes[game.scenario.mission_type]}</p>
 
-<fieldset>
+<fieldset data-tour="orbits">
   <legend>{text.orbitLabel}</legend>
   <p class="note">{text.orbitIntro}</p>
   <LockNote path="design.orbitId" />

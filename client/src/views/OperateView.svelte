@@ -85,7 +85,7 @@
 
   <section>
     <h3>{text.scoreTitle}: {fillTemplate(text.scoreOf, { points: Math.round(result.score.total) })}</h3>
-    <table class="score">
+    <table class="score" data-tour="score">
       <tbody>
         {#each result.score.parts.filter((part) => part.weight > 0) as part (part.id)}
           <tr>
@@ -134,7 +134,7 @@
           }}
         />
       </label>
-      <div class="playback">
+      <div class="playback" data-tour="playback">
         <button type="button" class="primary" onclick={togglePlay}>
           {playing ? text.pause : day >= steps.length ? text.replay : text.play}
         </button>

@@ -10,7 +10,7 @@
 
 <p>{text.intro}</p>
 <p class="quote">{game.scenario.objective}</p>
-<RequirementList requirements={game.scenario.requirements} />
+<div data-tour="requirements"><RequirementList requirements={game.scenario.requirements} /></div>
 <p class="note">{text.how}</p>
 
 {#each tips as tip (tip.title)}

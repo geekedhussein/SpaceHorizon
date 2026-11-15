@@ -64,14 +64,14 @@ const MAX_CHAT_LINES = 50
 /** Local changes are gathered for this long before they are sent. */
 const SEND_DELAY_MS = 120
 
-function stored(storage: 'localStorage' | 'sessionStorage', key: string): string | null {
+export function stored(storage: 'localStorage' | 'sessionStorage', key: string): string | null {
   try {
     return window[storage].getItem(key)
   } catch {
     return null
   }
 }
-function store(storage: 'localStorage' | 'sessionStorage', key: string, value: string): void {
+export function store(storage: 'localStorage' | 'sessionStorage', key: string, value: string): void {
   try {
     window[storage].setItem(key, value)
   } catch {

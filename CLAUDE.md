@@ -328,7 +328,8 @@ for Sun-synchronous orbits, since that orbit type does not exist without it.
       /strings      all user-facing text, one file per language (en.ts first)
       /scene3d      Three.js scenes: builder, orbit view, playback; asset loading
       /net          WebSocket client, message types, role table, reconnect
-      /stores       game state: design, phase, room (Svelte runes, game.svelte.ts)
+      /stores       game state: design, phase, room (Svelte runes, game.svelte.ts), tutorial
+      /tutorial     the first-run tutorial's steps (pure, tested)
       /components   resource bars, option cards, requirement list, charts, team panel
     /views          one view per phase
   /tests            Node-only test support (loads /content for the unit tests)

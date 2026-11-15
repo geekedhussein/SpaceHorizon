@@ -28,7 +28,7 @@
 
 <SaveShare />
 
-<div class="launch">
+<div class="launch" data-tour="launch">
   <p role="status">
     {#if game.blocked}
       {text.launchBlocked}

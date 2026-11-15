@@ -7,9 +7,11 @@
   import PhaseNav from './lib/components/PhaseNav.svelte'
   import ResourceBars from './lib/components/ResourceBars.svelte'
   import TeamPanel from './lib/components/TeamPanel.svelte'
+  import TutorialCoach from './lib/components/TutorialCoach.svelte'
   import { resourceBars } from './lib/components/resourceBars.ts'
   import { STEP_S } from './lib/sim/index.ts'
   import { game, PHASES } from './lib/stores/game.svelte.ts'
+  import { tutorial } from './lib/stores/tutorial.svelte.ts'
   import { uiText } from './lib/strings/en.ts'
   import ConceptView from './views/ConceptView.svelte'
   import DesignView from './views/DesignView.svelte'
@@ -35,6 +37,7 @@
   // A link with "#design=<id>" opens that saved design.
   onMount(() => {
     game.openLinkedDesign()
+    tutorial.startIfNew()
   })
 
   let phaseIndex = $derived(PHASES.indexOf(game.phase))
@@ -51,6 +54,9 @@
     <h1>{uiText.appName}</h1>
     <PhaseNav phase={game.phase} canOperate={game.result !== null} onselect={(phase) => game.go(phase)} />
     <span class="level">{uiText.need.levels[game.difficulty].name}</span>
+    <button type="button" class="tutorial" aria-pressed={tutorial.active} onclick={() => (tutorial.active ? tutorial.stop() : tutorial.start())}>
+      {uiText.tutorial.open}
+    </button>
     <TeamPanel />
   </header>
 
@@ -80,7 +86,7 @@
       {/if}
     </main>
 
-    <section class="stage" aria-label={uiText.stage.label}>
+    <section class="stage" aria-label={uiText.stage.label} data-tour="stage">
       <div class="switch" role="group" aria-label={uiText.stage.label}>
         <button type="button" aria-pressed={picture === 'spacecraft'} onclick={() => (picture = 'spacecraft')}>
           {uiText.stage.spacecraft}
@@ -94,6 +100,7 @@
       {:else}
         <OrbitView orbitId={game.design.orbitId} {bookedStationIds} bind:tS={orbitTimeS} bind:playing={orbitPlaying} />
       {/if}
+      <TutorialCoach />
     </section>
   </div>
 </div>
@@ -129,6 +136,10 @@
     color: #c3cbd9;
     font-size: 0.75rem;
     white-space: nowrap;
+  }
+  .tutorial[aria-pressed='true'] {
+    border-color: #c4a7ff;
+    color: #c4a7ff;
   }
   .work {
     display: grid;

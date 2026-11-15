@@ -818,6 +818,67 @@ export const uiText = {
     },
   },
 
+  tutorial: {
+    label: 'Tutorial',
+    open: 'Tutorial',
+    progress: 'Step {step} of {total}',
+    next: 'Next',
+    back: 'Back',
+    finish: 'Finish',
+    skip: 'End the tutorial',
+    hide: 'Hide',
+    show: 'Show the tutorial',
+    goTo: 'Go to {phase}',
+    elsewhere: 'This part happens in the {phase} step.',
+    doThis: 'Do this to go on, or press Next to skip it.',
+    steps: {
+      welcome: {
+        title: 'Welcome to Space Horizon',
+        text: 'You will design a real satellite mission, launch it and see what happens. This tutorial flies one whole mission with you. It takes about five minutes. You can end it at any time and start it again from the Tutorial button.',
+      },
+      bars: {
+        title: 'Your resources',
+        text: 'These bars are always on screen: mass, power, budget, data, communications and time. Every part you add uses some of them. A tick means fine; "Tight" and "Over" mean you are near or past a limit.',
+      },
+      need: {
+        title: 'Step 1: the need',
+        text: 'Every mission starts with a question to answer. Here it is to map the world\'s plants every month. Keep the Concept level for your first try: it has no surprises from chance. Then press Next at the bottom of the panel.',
+      },
+      orbit: {
+        title: 'Step 2: choose an orbit',
+        text: 'The orbit decides how often you pass over each place, how much sunlight you get and how long you can talk to the ground. Pick one. Sun-synchronous orbit (500 km) is a good first choice: it crosses each place at the same local time, so the light is the same in every picture.',
+      },
+      requirements: {
+        title: 'Step 3: the requirements',
+        text: 'The goal has become numbers the mission must reach. Each one is checked when you fly. Read them, then press Next.',
+      },
+      design: {
+        title: 'Step 4: build the mission',
+        text: 'You can pick every part yourself in the tabs below, or start from a ready-made design. For your first mission, choose "Low orbit, low cost" and press "Use this design". Then watch the resource bars change.',
+      },
+      builder: {
+        title: 'Your spacecraft in 3D',
+        text: 'This is the spacecraft you built. The frame, the solar panels and the antennas are drawn at their real size. Drag to turn it, scroll to zoom. Switch to Orbit to see where it will fly. Then press Next at the bottom of the panel to check the design.',
+      },
+      launch: {
+        title: 'Step 5: check, then launch',
+        text: 'Before launch, every requirement and limit is checked. Anything that stops the launch is listed with how to fix it. When the list is clear, press Launch.',
+      },
+      playback: {
+        title: 'Step 6: fly the mission',
+        text: 'Your mission is playing day by day, from launch to the end. The orbit view follows the day. Pause it, or move the slider to look at any day.',
+      },
+      report: {
+        title: 'Your score, and why',
+        text: 'The score is never just a number: it shows which requirements you met, whether the mission lasted, and how well you used the budget. Below it, "What happened and why" explains each result and what to change next time.',
+      },
+      loop: {
+        title: 'Now make it better',
+        text: 'Real missions are designed this way: change something, check, fly again. Go back to Design, try another orbit or another camera, and see what it changes. When you are ready, try the Trade study level.',
+      },
+    },
+  },
+
   share: {
     title: 'Save and share',
     save: 'Save this design',

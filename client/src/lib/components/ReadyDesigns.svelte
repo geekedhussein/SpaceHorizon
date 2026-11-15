@@ -43,7 +43,7 @@
 </script>
 
 {#if options.length > 0}
-  <details class="ready" bind:open>
+  <details class="ready" bind:open data-tour="ready">
     <summary>{text.title}</summary>
     <p class="note">{text.intro}</p>
     <ul>

@@ -8,8 +8,8 @@ listed here by its id.
 Status: covers the starter content (build step 1), the physics module (build step 2,
 section 5), the simulation, checks and scoring (build step 3, section 6), and the 3D
 views, the interface, team play, saved designs and the leaderboard (build steps 4 to
-7 and 9, section 7). Mission playback, random events and the tutorial (step 8) are
-not built yet.
+7 to 9, section 7): mission playback, ready-made designs and the tutorial. Random
+events are left for a later version.
 
 ## 1. Estimated content entries
 
@@ -115,7 +115,7 @@ game and may change during balancing.
 
 ## 4. Not in the starter set yet
 
-- Random events and thermal parts have no content yet (events: build step 8).
+- Random events and thermal parts have no content yet (events: a later version).
 - Antennas are not separate parts. Each radio carries its maker's matching antenna.
 - Development time per component is not recorded yet, so the simulation does not
   model it.
@@ -337,7 +337,7 @@ settings are in `parameters.ts`, each with its source in a comment.
 - **Launch failure** chance = 1 - successes / attempts from the launcher's published
   record. Off at Concept level.
 - **Effects** available: station outage, safe mode, permanent array damage. The
-  events themselves, and what mitigates them, are content for build step 8. The
+  events themselves, and what mitigates them, are content for a later version. The
   tests use labelled fixtures, not real figures.
 - **The random sequence does not depend on the design**, so two designs with the same
   seed meet the same events.
@@ -388,9 +388,10 @@ The orbit maths lives in `client/src/lib/orbit`, the drawing code in
   booked, only booked stations are shown in contact.
 - **Coverage cone.** Drawn from the station up to the orbit's height with the same
   Earth-centre angle the simulation uses for contact time.
-- **Mission timeline.** Moving the timeline to a day moves the view's clock to
-  midnight of that day. The view does not replay events or failures yet (build
-  step 8).
+- **Mission timeline.** After launch the report plays the mission from day 1 to the
+  end in about 20 seconds; moving the timeline to a day moves the view's clock to
+  midnight of that day. The view does not show events or failures (random events
+  are for a later version).
 
 ### Spacecraft builder
 
@@ -439,6 +440,13 @@ The shapes come from `scene3d/builderModel.ts`, which is unit-tested.
   plus the last. The slider and the day readout use every day.
 - **Solo seed.** Each solo launch draws a fresh seed in the browser. In a room the
   server issues it.
+- **Tutorial** (`lib/tutorial/steps.ts`, unit-tested). Eleven steps fly one mission
+  at the Concept level, from choosing it to reading the report. A step that asks
+  for an action moves on when the game shows it was done, and is skipped if the
+  player did it early. It starts by itself on the first visit (unless the page was
+  opened from a saved-design link), is remembered as done in the browser's local
+  storage, and can be restarted from the Tutorial button. It changes nothing in
+  the game itself; in a team, the player's actions follow the usual role rules.
 - **Ready-made designs** (`content/ready_designs.json`). Combinations of real parts
   from `/content`, not new data. They were found by trying 155,520 designs for
   `vegetation-monthly`: every orbit, launcher, frame, array, battery, pointing unit
