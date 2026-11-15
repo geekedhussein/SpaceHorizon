@@ -96,6 +96,8 @@ Constants from NASA and JPL are listed under NASA resources above.
 | V. Knap, L. K. Vestergaard, D.-I. Stroe, Energies 13, 4097 (2020), Table 6 | Battery depth of discharge in low Earth orbit |
 | J. Matzka et al., "The geomagnetic Kp index and derived indices of geomagnetic activity", Space Weather 2021, [DOI 10.1029/2020SW002641](https://doi.org/10.1029/2020SW002641); GFZ Potsdam daily index file (CC BY 4.0) | Long-run mean F10.7 and Ap for the drag model |
 | [Mulberry32](https://gist.github.com/tommyettinger/46a874533244883189143505d203312c), T. Ettinger; JavaScript form from [bryc/code](https://github.com/bryc/code/blob/master/jshash/PRNGs.md) (public domain) | Seeded random number generator |
+| [Computing Greenwich Apparent Sidereal Time](https://aa.usno.navy.mil/faq/GAST), US Naval Observatory | Greenwich mean sidereal time, which turns Earth beneath the orbit in the orbit view |
+| *The Astronomical Almanac*, low-precision formulas for the Sun (page C24), as cited in `client/src/lib/orbit/frames.ts` | Direction of the Sun for the date: day and night on the globe, the day-night line on the flat map, the Sun-synchronous orbit plane |
 
 The three textbooks are cited by title and topic. Page and equation numbers were not
 checked against a printed copy; each formula is instead checked by a unit test against
@@ -110,5 +112,24 @@ a published figure or a hand calculation.
 
 ## Textures and 3D models
 
-None yet. Each asset added to the client must be listed here with its source and
-licence. Do not use NASA logos.
+Each asset added to the client must be listed here with its source and licence. Do
+not use NASA logos.
+
+| File | What it is | Source | Licence |
+| --- | --- | --- | --- |
+| `client/static/textures/earth-day-2048.webp` (2048 x 1024) | Earth by day, equirectangular. Shown first, and on the flat map. | **Not recorded. To be confirmed by the team.** | **To be confirmed** |
+| `client/static/textures/earth-day-4096.webp` (4096 x 2048) | The same picture, larger. Loaded on big screens. | **Not recorded. To be confirmed by the team.** | **To be confirmed** |
+
+The two Earth textures were added without a note of where they came from, and the
+files carry no source information. They must not ship in the submission until the
+original image (for example a named NASA Blue Marble image) and its licence are
+written here.
+
+No 3D model files are used. The spacecraft is drawn from simple shapes sized from
+`/content` (see `docs/model-assumptions.md`, section 7).
+
+## Software
+
+| Library | Used for | Licence |
+| --- | --- | --- |
+| [three.js](https://threejs.org/) 0.187 | The 3D orbit view and spacecraft builder | MIT |

@@ -6,7 +6,8 @@ this page. A unit test checks that every content entry marked `"estimated": true
 listed here by its id.
 
 Status: covers the starter content (build step 1), the physics module (build step 2,
-section 5) and the simulation, checks and scoring (build step 3, section 6).
+section 5), the simulation, checks and scoring (build step 3, section 6), and the 3D
+views and single-player interface (build steps 4 and 5, section 7).
 
 ## 1. Estimated content entries
 
@@ -225,10 +226,10 @@ reference in a comment. This section lists what each one leaves out.
   the listing reproduces 45.7 days exactly; with an exact cube root the same equations
   give 47.1 days. The game uses the exact cube root.
 
-### Not in the physics module yet
+### Position along the orbit
 
-- Position along the orbit over time (Kepler propagation) belongs to `/lib/orbit`,
-  build step 4.
+Position over time (Kepler propagation) lives in `/lib/orbit`, not in the physics
+module. Its approximations are in section 7.
 
 ## 6. Simulation, checks and scoring
 
@@ -345,3 +346,110 @@ settings are in `parameters.ts`, each with its source in a comment.
 - Battery wear and component failure rates.
 - Development time.
 - Land coverage by latitude, and stations seen through a real pass schedule.
+
+## 7. 3D views and interface
+
+The orbit maths lives in `client/src/lib/orbit`, the drawing code in
+`client/src/lib/scene3d`, and the screens in `client/src/lib/components` and
+`client/src/views`. The views only draw. They never decide a game result.
+
+### Orbit view
+
+- **Motion.** Two-body Kepler motion plus the steady J2 drift of the orbit plane. The
+  J2 drift of the perigee and of the mean motion are left out; every orbit in the
+  game is circular.
+- **Time.** UTC is used as UT1 (they differ by less than 0.9 s). Greenwich mean
+  sidereal time uses the US Naval Observatory's linear formula, which loses about
+  0.1 s a century.
+- **Sun direction.** The Astronomical Almanac's low-precision formulas, good to about
+  0.01 degree from 1950 to 2050. The Sun's ecliptic latitude is taken as zero.
+- **Earth is a sphere** of its equatorial radius, as in the physics module.
+  Precession, nutation and polar motion are ignored.
+- **Start date.** The mission has no launch date yet, so the view starts on a
+  stand-in date, 1 January 2027 00:00 UTC. The view says so on screen.
+- **Where the orbit starts.** For a Sun-synchronous orbit the plane is placed from its
+  published equator crossing time (10:30 if none is published). For other orbits the
+  ascending node starts on the x axis. The spacecraft starts at its ascending node.
+  Both are free choices; real ones depend on the launch.
+- **Display only, differs from the simulation.** The view shows the real Sun angle for
+  the date, so the spacecraft may be in sunlight all the way round. The simulation
+  always assumes the longest eclipse (section 6).
+- **Fixed height.** The orbit is drawn at its starting height for the whole mission.
+  The fall from drag is in the simulation and the timeline charts, not in the picture.
+- **Day and night.** The edge between them is drawn as a soft band about 6 degrees
+  wide each side. That is cosmetic. On the flat map it is a sharp line on a sphere.
+  Twilight and the bending of light by the air are not shown.
+- **Scale.** Earth and the orbit are to scale. The spacecraft, the station dots and
+  the Sun marker are not; the Sun marker shows direction only. Labels say so.
+- **Contact.** A station counts as "in contact" when the spacecraft is 10 degrees or
+  more above its horizon, the same limit the simulation uses. Once stations are
+  booked, only booked stations are shown in contact.
+- **Coverage cone.** Drawn from the station up to the orbit's height with the same
+  Earth-centre angle the simulation uses for contact time.
+- **Mission timeline.** Moving the timeline to a day moves the view's clock to
+  midnight of that day. The view does not replay events or failures yet (build
+  step 8).
+
+### Spacecraft builder
+
+The shapes come from `scene3d/builderModel.ts`, which is unit-tested.
+
+- **To scale:** the frame (the structure's published outside size); the fold-out
+  solar panels (their published total area, split into two wings as tall as the
+  frame); the body solar panel (one long face of the frame); and the launcher's nose
+  cone (published width and height).
+- **Antenna sizes are derived, not published.** A whip is a quarter of the radio's
+  wavelength, c / (4 f). A patch is a square with the area that gives the published
+  gain, A = G lambda^2 / (4 pi), with an efficiency of 1. Real antennas differ in
+  shape and are less than fully efficient, so a real patch is somewhat larger.
+  Radios below 1 GHz get whips; the others get a patch.
+- **Schematic only:** the parts inside the frame are equal slabs stacked from the
+  thruster end to the instrument end. Their real sizes are not in `/content`. The
+  camera lens, the thruster nozzle, panel thickness and where each part sits are
+  also placed for clarity.
+- **Nose cone.** Drawn as a plain cylinder of the published width and height. A real
+  fairing tapers to a point, so the usable space is smaller.
+- **No fairing fit check.** The builder shows the nose cone but the game does not
+  test whether the spacecraft fits inside it. Every CubeSat frame in the starter set
+  is far smaller than every fairing. A fit check belongs in `/lib/sim` if larger
+  spacecraft are added.
+
+### Interface
+
+- **Forecast.** The Design and Verify steps show what the mission would return "if
+  nothing goes wrong by chance". It is the same simulation, run with chance events
+  off and with no check stopping the launch. It is not a separate model.
+- **Resource bars** (`components/resourceBars.ts`, unit-tested). Each compares two
+  numbers from the budgets:
+  - Mass: spacecraft mass against the lower of the launcher's capacity (less the
+    level's margin) and the structure's own limit.
+  - Power: the sunlit power the plan needs (plus the level's margin) against the
+    array's output at the end of the mission.
+  - Budget: parts, launch and ground passes against the scenario budget.
+  - Data: data made each day against what the booked passes can carry.
+  - Comms: passes booked against passes the orbit offers, summed over booked
+    stations. It also reads "over" if a booked station cannot hear any radio.
+  - Time: how long the orbit lasts against the planned life. Development time is
+    not modelled (section 4), so it is not on this bar.
+- **"Tight"** on a bar means more than 90% of the limit is used. Game-design value,
+  display only; it does not affect the checks or the score.
+- **Charts** draw at most 240 points a line. Longer missions show every k-th day
+  plus the last. The slider and the day readout use every day.
+- **Solo seed.** Each solo launch draws a fresh seed in the browser. In a room the
+  server will issue it (build step 7).
+
+### Game-design decisions that need the team
+
+- **The Concept level shows the whole catalogue.** CLAUDE.md asks for "few
+  components" at Concept. A search of the starter set found no design made only of
+  `simple` parts that meets every requirement of `vegetation-monthly`: the best
+  scored 55, because only the X-band transmitter (`advanced`) can carry the data.
+  Hiding advanced parts would make the level unwinnable, so nothing is hidden. To
+  restore a reduced catalogue, either re-tier the parts or add a scenario that
+  simple parts can pass.
+- **No random events yet.** `events.json` does not exist (build step 8). At Trade
+  study and Point design the only chance event is a launch failure, from the
+  launcher's published record.
+- **Point design unlock** is remembered in the browser's local storage only. It is
+  earned by meeting every requirement at Trade study with sandbox off.
+
