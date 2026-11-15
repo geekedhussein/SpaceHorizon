@@ -152,3 +152,23 @@ export function inEarthShadow(positionM: Vec3, sunDirection: Vec3): boolean {
   const offAxis = Math.sqrt(Math.max(0, dot(positionM, positionM) - along * along))
   return offAxis < EARTH_EQUATORIAL_RADIUS_M
 }
+
+/** The place on the ground where the Sun is straight overhead. */
+export function sunSubpoint(unixMs: number): GroundPoint {
+  const sun = sunPosition(unixMs)
+  const below = ecefToGeographic(eciToEcef(sun.directionEci, gmstRad(unixMs)))
+  return { latitudeRad: below.latitudeRad, longitudeRad: below.longitudeRad, heightM: 0 }
+}
+
+/**
+ * Latitude of the line between day and night at a given longitude. On that
+ * line the Sun is on the horizon: the ground direction n and the Sun direction
+ * s are at right angles, n . s = 0, which gives
+ *   tan(lat) = -cos(lon - lon_sun) / tan(lat_sun)
+ * Night lies on the side away from the Sun's latitude.
+ */
+export function terminatorLatitudeRad(longitudeRad: number, sun: GroundPoint): number {
+  // At an equinox the line runs through both poles; keep the tangent finite.
+  const sunLatitude = Math.abs(sun.latitudeRad) < 1e-6 ? 1e-6 : sun.latitudeRad
+  return Math.atan(-Math.cos(longitudeRad - sun.longitudeRad) / Math.tan(sunLatitude))
+}

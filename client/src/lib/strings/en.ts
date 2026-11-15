@@ -401,3 +401,340 @@ export function describeCause(cause: Cause, locale = 'en'): CauseText {
   const entry = causeTexts[cause.id]
   return { text: fillTemplate(entry.text, cause.values, locale), fix: entry.fix }
 }
+
+// ----------------------------------------------------------- orbit view ---
+
+/** Text for the 3D orbit view and its flat-map fallback. */
+export const orbitViewText = {
+  title: 'Orbit view',
+  orbitLabel: 'Orbit',
+  play: 'Play',
+  pause: 'Pause',
+  speedLabel: 'Speed',
+  speedValue: '{factor}× real time',
+  showLabels: 'Labels',
+  showPath: 'Orbit path',
+  showCones: 'Station coverage',
+  view3d: '3D view',
+  viewMap: 'Flat map',
+  viewLabel: 'View',
+  loading: 'Loading the 3D view…',
+  webglMissing:
+    'This device cannot show 3D graphics, so here is a flat map instead. Everything else works the same.',
+  controlsHint: 'Drag to turn. Scroll or pinch to zoom. Arrow keys and the + and − keys also work.',
+  sceneDescription:
+    '3D view of Earth with the spacecraft moving along its orbit. The readout lists the same information as text.',
+  mapDescription:
+    'Flat map of Earth showing the path of the spacecraft over the ground, the ground stations, and the night side.',
+  spacecraft: 'Spacecraft',
+  spacecraftNotToScale: 'Spacecraft (not to scale)',
+  sun: 'To the Sun (really 150 million km away)',
+  sunOverhead: 'Sun overhead',
+  readoutTitle: 'Right now',
+  time: 'Date and time',
+  height: 'Height',
+  heightValue: '{km} km',
+  period: 'One orbit takes',
+  periodValue: '{minutes} minutes',
+  below: 'Over',
+  north: 'N',
+  south: 'S',
+  east: 'E',
+  west: 'W',
+  light: 'Light',
+  inSunlight: 'In sunlight',
+  inShadow: "In Earth's shadow",
+  contact: 'Stations in contact',
+  noContact: 'None',
+  epochNote: 'The start date is a stand-in until the mission has a launch date.',
+  scaleNote: 'Earth and the orbit are drawn to scale.',
+} as const
+
+// ------------------------------------------------------------ game screens ---
+
+/** Whole numbers above 100, one decimal above 1, two significant digits below. */
+export function formatNumber(value: number, locale = 'en'): string {
+  const abs = Math.abs(value)
+  const options =
+    abs >= 100 ? { maximumFractionDigits: 0 } : abs >= 1 ? { maximumFractionDigits: 1 } : { maximumSignificantDigits: 2 }
+  return new Intl.NumberFormat(locale, options).format(value)
+}
+
+/** Money held in millions of US dollars, written the way people say it. */
+export function formatMoney(musd: number, locale = 'en'): string {
+  if (Math.abs(musd) >= 1) return `$${formatNumber(musd, locale)} million`
+  const dollars = Number((musd * 1e6).toPrecision(3))
+  return `$${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(dollars)}`
+}
+
+/** Text for the six phases, the resource bars and the report. */
+export const uiText = {
+  appName: 'Space Horizon',
+  skipToContent: 'Skip to the main panel',
+  back: 'Back',
+  next: 'Next',
+  none: 'None',
+  noneDescription: 'Fly without one.',
+  notAvailable: 'Not available:',
+  tierSimple: 'Simple',
+  tierAdvanced: 'Advanced',
+  chosen: 'Chosen',
+  moreInfo: 'What is this?',
+  estimated: 'Some figures for this item are estimates. See the About notes.',
+
+  phases: {
+    need: { name: 'Need', step: 'CML 1, the idea', title: 'What is the mission for?' },
+    concept: { name: 'Concept', step: 'CML 2, feasibility', title: 'Choose the kind of mission' },
+    requirements: { name: 'Requirements', step: 'CML 2', title: 'What the mission must achieve' },
+    design: { name: 'Design', step: 'CML 3, trade space', title: 'Build the mission' },
+    verify: { name: 'Verify', step: 'CML 4, point design', title: 'Check everything before launch' },
+    operate: { name: 'Operate', step: 'Mission', title: 'Fly the mission' },
+  },
+  phaseNavLabel: 'Mission steps',
+  phaseLocked: 'Launch the mission first.',
+
+  stage: {
+    label: 'Picture',
+    spacecraft: 'Spacecraft',
+    orbit: 'Orbit',
+    exampleOrbit: 'Example orbit: {orbit}. You choose yours in the Concept step.',
+  },
+
+  resources: {
+    title: 'Resources',
+    status: { ok: 'OK', tight: 'Tight', over: 'Over', short: 'Too short', none: 'Not set' },
+    of: 'of',
+    mass: {
+      name: 'Mass',
+      unit: 'kg',
+      caption: 'Spacecraft mass against the lower of the launcher limit and the structure limit.',
+      empty: 'Choose a structure or a launcher.',
+    },
+    power: {
+      name: 'Power',
+      unit: 'W',
+      caption: 'Power the plan needs in sunlight against what the solar array makes at the end of the mission.',
+      empty: 'Choose an orbit.',
+    },
+    budget: {
+      name: 'Budget',
+      unit: '',
+      caption: 'Cost of parts, launch and ground station passes against the budget.',
+      empty: '',
+    },
+    data: {
+      name: 'Data',
+      unit: 'GB a day',
+      caption: 'Data the instruments make each day against what the booked passes can carry.',
+      empty: 'Choose an orbit.',
+    },
+    comms: {
+      name: 'Comms',
+      unit: 'passes a day',
+      caption: 'Ground station passes booked against the passes this orbit offers.',
+      empty: 'Book a ground station.',
+    },
+    time: {
+      name: 'Time',
+      unit: 'years',
+      caption: 'How long the orbit lasts against the planned mission life.',
+      empty: 'Choose an orbit and a structure.',
+    },
+  },
+
+  need: {
+    intro: 'Every mission starts with a need. Pick the mission you want to fly.',
+    scenarioLabel: 'Mission',
+    objective: 'Objective',
+    budget: 'Budget',
+    lifetime: 'Planned life',
+    years: '{years} years',
+    levelLabel: 'Study depth',
+    levels: {
+      concept: {
+        name: 'Concept',
+        text: 'Generous margins. Nothing goes wrong by chance. Best for a first mission.',
+      },
+      'trade-study': {
+        name: 'Trade study',
+        text: 'Needs 10% spare launch mass and power. The rocket can fail, as real rockets sometimes do.',
+      },
+      'point-design': {
+        name: 'Point design',
+        text: 'Needs 20% spare launch mass and power. Chance events are twice as likely.',
+      },
+    },
+    levelLocked: 'Meet every requirement at Trade study level to unlock this.',
+    sandbox: 'Sandbox: checks warn but do not stop the launch',
+    physicsNote: 'The level changes the margins and the luck. It never changes the physics.',
+  },
+
+  concept: {
+    intro: 'A mission has four parts. You will make choices in each one.',
+    missionType: 'Mission type',
+    missionTypes: { 'earth-observation': 'Earth observation: a camera in orbit looks down at the ground.' },
+    segments: [
+      { name: 'Launch', text: 'The rocket that carries the spacecraft to its orbit.' },
+      { name: 'Space', text: 'The spacecraft: its frame, power, radio and instruments.' },
+      { name: 'Ground', text: 'The dish antennas on Earth that receive the data.' },
+      { name: 'User', text: 'The people who use the data. Their needs set the score.' },
+    ],
+    orbitLabel: 'Orbit',
+    orbitIntro: 'The orbit sets what the camera sees, how long the spacecraft is in shadow, and how long it lasts.',
+    altitude: 'Height {km} km',
+    tilt: 'Tilt {deg}°',
+    period: 'One orbit in {minutes} min',
+    eclipse: 'Up to {minutes} min in shadow',
+    pass: 'Passes up to {minutes} min',
+  },
+
+  requirements: {
+    intro: 'Begin with the end in mind. The objective becomes numbers the mission must reach. The score mostly measures how well it reaches them.',
+    how: 'Each one is checked when the mission flies. The Design step shows a forecast as you build.',
+    goal: 'Goal',
+    atMost: 'at most {threshold} {unit}',
+    atLeast: 'at least {threshold} {unit}',
+    met: 'Met',
+    notMet: 'Not met',
+    value: 'Result: {value} {unit}',
+    noValue: 'Result: never achieved',
+    margin: 'Margin: {percent}%',
+    forecastTitle: 'Forecast',
+    forecastNote: 'What the mission would return if nothing goes wrong by chance.',
+  },
+
+  design: {
+    intro: 'Every choice costs mass, power and money. Watch the resource bars as you build.',
+    tabsLabel: 'Mission parts',
+    tabs: { space: 'Spacecraft', launch: 'Launch', ground: 'Ground' },
+    slots: {
+      structure: { name: 'Structure', text: 'The frame everything is bolted to. It sets the size and the mass limit.' },
+      solarArray: { name: 'Solar array', text: 'Makes electricity from sunlight.' },
+      battery: { name: 'Battery', text: 'Runs the spacecraft in Earth\'s shadow.' },
+      computer: { name: 'Computer', text: 'Runs the spacecraft and stores data until it can be sent.' },
+      attitudeControl: { name: 'Attitude control', text: 'Controls which way the spacecraft points.' },
+      propulsion: { name: 'Propulsion', text: 'Optional. A thruster can push against air drag to keep the orbit up.' },
+      radios: { name: 'Radios', text: 'Send data down and receive commands. You can carry more than one.' },
+      instruments: { name: 'Instruments', text: 'The reason for the mission. You can carry more than one.' },
+    },
+    mass: '{kg} kg',
+    powerMakes: 'Makes {w} W',
+    powerUses: 'Uses {w} W',
+    powerNone: 'Uses no power',
+    madeFor: 'Made for {sizes}U frames. Your frame is {size}U.',
+    cannotServe: 'It cannot serve this objective.',
+    imagingLabel: 'Imaging each day',
+    imagingValue: '{minutes} minutes',
+    imagingHelp: 'More imaging means more data and more power. The most a camera can use is {max} minutes a day over sunlit land.',
+    imagingNeedsOrbit: 'Choose an orbit to see how much imaging is possible.',
+    launcherIntro: 'The rocket must reach your orbit and carry your mass.',
+    capacity: 'Carries {kg} kg to your orbit',
+    capacityNoOrbit: 'Choose an orbit to see what it can carry.',
+    doesNotFly: 'It does not fly to your orbit.',
+    record: '{successes} of {attempts} launches succeeded',
+    fairing: 'Nose cone {diameter} m wide, {height} m tall',
+    dedicated: 'Your own rocket',
+    rideshare: 'Shared rocket',
+    stationIntro: 'Book passes at ground stations. Each pass costs money, and each station hears only some radio bands.',
+    passesLabel: 'Passes a day at {station}',
+    passesOffer: 'This orbit offers about {available} passes a day here.',
+    passCost: '{cost} a pass',
+    bands: { s: 'S-band', x: 'X-band' },
+    hears: 'Hears {bands}',
+    latitude: 'Latitude {deg}°',
+    facts: {
+      stores: 'Stores {wh} Wh',
+      storage: 'Holds {gb} GB of data',
+      dataRate: 'Sends up to {rate} megabits a second',
+      twoWay: 'Sends and receives',
+      oneWay: 'Sends only',
+      pixel: 'Pixel {m} m from 500 km',
+      strip: 'Strip {km} km wide from 500 km',
+      bands: '{count} colour bands',
+      massLimit: 'Whole spacecraft up to {kg} kg',
+      size: '{u}U frame',
+    },
+    chosenCount: '{count} chosen',
+  },
+
+  builder: {
+    title: 'Spacecraft view',
+    empty: 'Choose a structure to start building.',
+    loading: 'Loading the 3D view…',
+    webglMissing: 'This device cannot show 3D graphics, so here is a flat drawing instead.',
+    showLabels: 'Labels',
+    showFairing: 'Launcher nose cone',
+    sceneDescription: '3D model of the spacecraft. The list of chosen parts in the Design panel gives the same information.',
+    diagramDescription: 'Flat front view of the spacecraft and its parts.',
+    scaleNote: 'The frame, the solar panel area and the antenna sizes are to scale. Parts inside the frame are placed for clarity.',
+    fairingNote: 'The nose cone is drawn as a plain cylinder with its real width and height.',
+    controlsHint: 'Drag to turn. Scroll or pinch to zoom. Arrow keys and the + and − keys also work.',
+  },
+
+  verify: {
+    intro: 'Engineers check every requirement before launch. Fix what is blocked. A risk can fly, but expect trouble.',
+    status: { ok: 'OK', risk: 'Risk', blocked: 'Blocked' },
+    summary: '{blocked} blocked, {risk} risks, {ok} OK',
+    problemsTitle: 'Needs attention',
+    okTitle: 'Passing',
+    fix: 'Fix:',
+    launch: 'Launch',
+    launchBlocked: 'The mission cannot launch until every blocked check is fixed.',
+    launchReady: 'Ready to launch. You can still go back and change the design.',
+    changeDesign: 'Change the design',
+  },
+
+  operate: {
+    notFlown: 'The mission has not flown yet. Finish the checks, then launch.',
+    statuses: {
+      completed: 'The mission flew for its whole planned life.',
+      not_launched: 'The mission did not launch.',
+      launch_failed: 'The rocket failed. The spacecraft was lost.',
+      reentered: 'The orbit decayed and the spacecraft burned up early.',
+      power_lost: 'The spacecraft lost power and shut down.',
+    },
+    daysFlown: 'Flew {days} of {planned} planned days.',
+    seed: 'Luck number (seed): {seed}',
+    scoreTitle: 'Score',
+    scoreOf: '{points} of 100',
+    scoreParts: {
+      requirements: 'Requirements met',
+      survival: 'Lasted its planned life',
+      efficiency: 'Efficient use of budget and margins',
+      collaboration: 'Teamwork',
+    },
+    pointsOf: '{points} of {weight}',
+    requirementsTitle: 'Requirements',
+    causesTitle: 'What happened and why',
+    severity: { info: 'Note', warning: 'Problem', failure: 'Failure' },
+    nextTime: 'Next time:',
+    timelineTitle: 'Mission timeline',
+    dayLabel: 'Day',
+    dayValue: 'Day {day}',
+    timelineHelp: 'Move the slider to see any day. The orbit view jumps to that day.',
+    dayFacts: {
+      altitude: 'Height {km} km',
+      power: 'Made {made} W, used {used} W',
+      data: 'Made {made} GB, sent {sent} GB, lost {lost} GB',
+      stored: 'Stored on board: {gb} GB',
+    },
+    charts: {
+      power: 'Power, averaged over each day (W)',
+      generation: 'Made',
+      consumption: 'Used',
+      data: 'Data each day (GB)',
+      generated: 'Made',
+      downlinked: 'Sent to the ground',
+      stored: 'Data waiting on board (GB)',
+      altitude: 'Height (km)',
+      day: 'Day {day}',
+      table: 'Show as a table',
+      dayColumn: 'Day',
+    },
+    resemblesTitle: 'Your mission resembles {mission}',
+    source: 'Source',
+    relaunch: 'Launch again',
+    unlocked: 'You met every requirement at Trade study level. Point design is now unlocked.',
+    designChanged: 'This report is for the design you launched. You have changed the design since.',
+  },
+} as const

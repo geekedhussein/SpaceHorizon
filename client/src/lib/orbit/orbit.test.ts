@@ -16,6 +16,8 @@ import {
   inEarthShadow,
   julianDate,
   sunPosition,
+  sunSubpoint,
+  terminatorLatitudeRad,
 } from './frames.ts'
 import {
   dot,
@@ -30,7 +32,7 @@ import {
   wrapTwoPi,
 } from './kepler.ts'
 import type { OrbitalElements, Vec3 } from './kepler.ts'
-import { elementsForOrbit, missionGeometry, parseLocalTimeHours } from './mission.ts'
+import { contactConeAngleRad, elementsForOrbit, groundTrack, missionGeometry, parseLocalTimeHours } from './mission.ts'
 
 const orbit = (id: string): Orbit => {
   const found = catalog.orbits.find((entry) => entry.id === id)
@@ -315,6 +317,37 @@ describe('orbits from the game content', () => {
     expect(view.subpoint.latitudeRad).toBeCloseTo(0, 9)
     // Southbound crossing is at 10:30 local time, so the northbound one is at 22:30: night side.
     expect(dot(view.positionEciM, view.sunDirectionEci)).toBeLessThan(0)
+  })
+
+  it('puts the Sun on the horizon along the day-night line', () => {
+    const time = Date.UTC(2026, 6, 4, 9, 30)
+    const sun = sunSubpoint(time)
+    const toSun = geographicToEcefM(sun.latitudeRad, sun.longitudeRad)
+    for (const longitudeDeg of [-170, -60, 0, 45, 130]) {
+      const longitude = degToRad(longitudeDeg)
+      const onLine = geographicToEcefM(terminatorLatitudeRad(longitude, sun), longitude)
+      expect(dot(onLine, toSun) / EARTH_EQUATORIAL_RADIUS_M ** 2).toBeCloseTo(0, 9)
+    }
+    // In July the Sun is north of the equator.
+    expect(sun.latitudeRad).toBeGreaterThan(0)
+  })
+
+  it('draws a ground track that starts below the spacecraft and drifts west', () => {
+    const elements = elementsForOrbit(orbit('iss-like'), EPOCH)
+    const T = periodS(elements)
+    const track = groundTrack(elements, EPOCH, 0, T, 90)
+    expect(track).toHaveLength(91)
+    expect(track[0]).toEqual(missionGeometry(elements, [], EPOCH, 0).subpoint)
+    // One orbit later Earth has turned about 23 degrees east beneath the orbit.
+    expect(angleBetweenDeg(track[90].longitudeRad, track[0].longitudeRad)).toBeCloseTo(-23.5, 0)
+  })
+
+  it('sizes the coverage cone so its edge is at the lowest usable elevation', () => {
+    const sso = orbit('sso-500')
+    const angle = contactConeAngleRad(sso)
+    const station = geographicToEcefM(0, 0)
+    const onEdge = geographicToEcefM(0, angle, sso.altitude_km * 1000)
+    expect(elevationRad(station, onEdge)).toBeCloseTo(MIN_ELEVATION_RAD, 9)
   })
 
   it('is deterministic', () => {

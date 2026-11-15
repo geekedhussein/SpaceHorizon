@@ -2,6 +2,7 @@
 // orbital elements, and work out what the scene shows at a moment in time.
 // Pure functions. The 3D scene only draws what these return.
 
+import { earthCentralAngleRad } from '../physics/coverage.ts'
 import { semiMajorAxisM } from '../physics/orbit.ts'
 import { degToRad, M_PER_KM } from '../physics/units.ts'
 import { MIN_ELEVATION_RAD } from '../sim/parameters.ts'
@@ -115,4 +116,33 @@ export function missionGeometry(
       }
     }),
   }
+}
+
+/**
+ * The ground track: the points the spacecraft flies over, from `startS` for
+ * `durationS` seconds, as `steps` + 1 points.
+ */
+export function groundTrack(
+  elements: OrbitalElements,
+  epochMs: number,
+  startS: number,
+  durationS: number,
+  steps: number,
+): GroundPoint[] {
+  const track: GroundPoint[] = []
+  for (let index = 0; index <= steps; index++) {
+    const tS = startS + (durationS * index) / steps
+    track.push(ecefToGeographic(eciToEcef(positionEciM(elements, tS), gmstRad(epochMs + tS * 1000))))
+  }
+  return track
+}
+
+/**
+ * How far from a station (as an angle at Earth's centre) the point below the
+ * spacecraft can be while the station still sees it. This is the size of the
+ * coverage cone drawn over each station, and the same angle the simulation
+ * uses for contact time.
+ */
+export function contactConeAngleRad(orbit: Orbit): number {
+  return earthCentralAngleRad(orbit.altitude_km * M_PER_KM, MIN_ELEVATION_RAD)
 }
