@@ -125,6 +125,16 @@ files carry no source information. They must not ship in the submission until th
 original image (for example a named NASA Blue Marble image) and its licence are
 written here.
 
+Fonts:
+
+| Font | Used for | Source | Licence |
+| --- | --- | --- | --- |
+| Exo 2 (variable), via the npm package `@fontsource-variable/exo-2` 5.3.0 | Headings, numbers and buttons | The Exo 2 Project Authors, https://github.com/googlefonts/Exo-2.0 (retrieved 2026-11-15) | SIL Open Font License 1.1 |
+
+The font files are bundled into `client/dist` at build time, so nothing is fetched
+while the game runs. Sound effects are made in the browser with the Web Audio API
+(`client/src/lib/game/sound.ts`); there are no audio files.
+
 No 3D model files are used. The spacecraft is drawn from simple shapes sized from
 `/content` (see `docs/model-assumptions.md`, section 7).
 

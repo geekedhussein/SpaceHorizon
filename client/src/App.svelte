@@ -2,10 +2,13 @@
   import { onMount } from 'svelte'
   // The game shell: the mission steps across the top, the resource bars always
   // on screen, the current step's panel, and the 3D picture beside it.
+  import BadgeShelf from './lib/components/BadgeShelf.svelte'
   import BuilderView from './lib/components/BuilderView.svelte'
+  import LaunchCountdown from './lib/components/LaunchCountdown.svelte'
   import OrbitView from './lib/components/OrbitView.svelte'
   import PhaseNav from './lib/components/PhaseNav.svelte'
   import ResourceBars from './lib/components/ResourceBars.svelte'
+  import SoundToggle from './lib/components/SoundToggle.svelte'
   import TeamPanel from './lib/components/TeamPanel.svelte'
   import TutorialCoach from './lib/components/TutorialCoach.svelte'
   import { resourceBars } from './lib/components/resourceBars.ts'
@@ -48,15 +51,31 @@
   })
 </script>
 
+<LaunchCountdown />
 <a class="skip" href="#panel">{uiText.skipToContent}</a>
 <div class="app">
   <header>
-    <h1>{uiText.appName}</h1>
+    <h1>
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="7" fill="url(#logo-planet)" />
+        <ellipse cx="16" cy="16" rx="14" ry="5.5" fill="none" stroke="#7fd4ff" stroke-width="1.6" transform="rotate(-22 16 16)" />
+        <circle cx="28.4" cy="11" r="2" fill="#ffd166" />
+        <defs>
+          <radialGradient id="logo-planet" cx="0.35" cy="0.35">
+            <stop offset="0" stop-color="#9fe2ff" />
+            <stop offset="1" stop-color="#2463b8" />
+          </radialGradient>
+        </defs>
+      </svg>
+      <span>{uiText.appName}</span>
+    </h1>
     <PhaseNav phase={game.phase} canOperate={game.result !== null} onselect={(phase) => game.go(phase)} />
     <span class="level">{uiText.need.levels[game.difficulty].name}</span>
     <button type="button" class="tutorial" aria-pressed={tutorial.active} onclick={() => (tutorial.active ? tutorial.stop() : tutorial.start())}>
       {uiText.tutorial.open}
     </button>
+    <BadgeShelf />
+    <SoundToggle />
     <TeamPanel />
   </header>
 
@@ -108,22 +127,44 @@
 <style>
   .app {
     display: grid;
+    /* One column no wider than the screen: the header and bars shrink to fit. */
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto minmax(0, 1fr);
     height: 100dvh;
   }
   header {
+    position: relative;
+    z-index: 6;
+    min-width: 0;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem 0.6rem;
     padding: 0.4rem 0.75rem;
-    background: #0b101c;
-    border-bottom: 1px solid #1f2a40;
+    background: linear-gradient(180deg, rgba(14, 21, 38, 0.95), rgba(9, 13, 24, 0.92));
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 1px 0 rgba(127, 212, 255, 0.08);
   }
   h1 {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
     margin: 0;
-    font-size: 1rem;
-    letter-spacing: 0.03em;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     white-space: nowrap;
+  }
+  h1 span {
+    background: linear-gradient(90deg, #e9f6ff, #7fd4ff 60%, #c4a7ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .logo {
+    width: 1.7rem;
+    height: 1.7rem;
+    flex: none;
   }
   header :global(nav) {
     flex: 1;
@@ -136,6 +177,12 @@
     color: #c3cbd9;
     font-size: 0.75rem;
     white-space: nowrap;
+  }
+  /* Narrower desktops: the level is shown in step 1, so it gives way first. */
+  @media (max-width: 1400px) {
+    .level {
+      display: none;
+    }
   }
   .tutorial[aria-pressed='true'] {
     border-color: #c4a7ff;
@@ -152,22 +199,33 @@
     gap: 0.9rem;
     padding: 1rem;
     overflow-y: auto;
-    border-right: 1px solid #1f2a40;
-    background: #0b101c;
+    border-right: 1px solid var(--line);
+    background: var(--panel);
+    backdrop-filter: blur(6px);
   }
   main:focus {
     outline: none;
   }
   .step {
-    margin: 0 0 -0.6rem;
-    color: #a9b6cc;
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
+    justify-self: start;
+    margin: 0 0 -0.5rem;
+    padding: 0.1rem 0.6rem;
+    border: 1px solid rgba(127, 212, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(127, 212, 255, 0.08);
+    color: var(--accent);
+    font-family: var(--display-font);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   h2 {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.55rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
   }
   .buttons {
     display: flex;

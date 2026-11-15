@@ -15,6 +15,9 @@ import { connectRoom, createRoom, roomExists } from '../net/roomClient.ts'
 import type { ConnectionStatus, RoomConnection } from '../net/roomClient.ts'
 import { checkDesign, isBlocked, simulate } from '../sim/index.ts'
 import type { Design, Difficulty, ReadyDesign, SimulationResult } from '../sim/index.ts'
+import { award, parseProfile } from '../game/rewards.ts'
+import type { Profile, Rewards } from '../game/rewards.ts'
+import { sound } from '../game/sound.ts'
 import { PHASES } from './phases.ts'
 import type { Phase } from './phases.ts'
 
@@ -58,6 +61,10 @@ export interface RoomState {
 
 /** Remembered in this browser only. */
 const UNLOCK_KEY = 'space-horizon.point-design-unlocked'
+const PROFILE_KEY = 'space-horizon.profile'
+/** The launch countdown: seconds counted, and how long each one lasts. */
+const COUNTDOWN_FROM = 3
+const COUNTDOWN_STEP_MS = 850
 const NAME_KEY = 'space-horizon.player-name'
 const PLAYER_ID_KEY = 'space-horizon.player-id'
 const MAX_CHAT_LINES = 50
@@ -107,6 +114,16 @@ class Game {
   pointDesignUnlocked = $state(stored('localStorage', UNLOCK_KEY) === 'yes')
   /** True right after the launch that unlocked Point design. */
   justUnlocked = $state(false)
+
+  /** Stars, badges and best score from the last flight (lib/game/rewards.ts). */
+  rewards = $state.raw<Rewards | null>(null)
+  /** Badges, bests and flights, remembered in this browser. */
+  profile = $state.raw<Profile>(parseProfile(stored('localStorage', PROFILE_KEY)))
+  /** Seconds left before liftoff (0 is liftoff), or null with no launch under way. */
+  countdown = $state<number | null>(null)
+  countdownLauncher = $state('')
+  #countdownTimer: ReturnType<typeof setInterval> | undefined
+  #liftoff: (() => void) | null = null
 
   /** The team room, or null when playing alone. */
   room = $state<RoomState | null>(null)
@@ -201,14 +218,41 @@ class Game {
     if (next) this.go(next)
   }
 
-  /** Launch: at once when alone; in a room, ask the server, which tells everyone. */
+  /** Launch: alone, after the countdown; in a room, ask the server, which tells everyone. */
   launch(): void {
     if (this.room) this.#connection?.send({ type: 'launch' })
-    else this.#fly(newSeed(), undefined)
+    else this.#countDown(newSeed(), undefined)
   }
 
-  #fly(seed: number, teamwork: number | undefined): void {
+  /** End the countdown now and fly. */
+  skipCountdown(): void {
+    if (this.#liftoff) this.#liftoff()
+  }
+
+  /** Count down from COUNTDOWN_FROM, then fly the design as it was at the start. */
+  #countDown(seed: number, teamwork: number | undefined): void {
+    clearInterval(this.#countdownTimer)
     const design = $state.snapshot(this.design)
+    this.countdownLauncher = this.analysis.resolved.launcher?.name ?? ''
+    this.countdown = COUNTDOWN_FROM
+    sound.count()
+    this.#liftoff = () => {
+      clearInterval(this.#countdownTimer)
+      this.#liftoff = null
+      this.countdown = null
+      this.#fly(seed, teamwork, design)
+    }
+    this.#countdownTimer = setInterval(() => {
+      if (this.countdown === null) return
+      if (this.countdown > 0) {
+        this.countdown -= 1
+        if (this.countdown > 0) sound.count()
+        else sound.liftoff()
+      } else this.#liftoff?.()
+    }, COUNTDOWN_STEP_MS)
+  }
+
+  #fly(seed: number, teamwork: number | undefined, design: Design = $state.snapshot(this.design)): void {
     const result = simulate(design, this.scenario, seed, {
       catalog,
       difficulty: this.difficulty,
@@ -225,6 +269,19 @@ class Game {
       this.justUnlocked = true
       store('localStorage', UNLOCK_KEY, 'yes')
     }
+    const awarded = award(
+      result,
+      {
+        scenario: this.scenario,
+        design,
+        orbitIds: catalog.orbits.map((orbit) => orbit.id),
+        team: (this.room?.players.length ?? 1) > 1,
+      },
+      this.profile,
+    )
+    this.rewards = awarded.rewards
+    this.profile = awarded.profile
+    store('localStorage', PROFILE_KEY, JSON.stringify(awarded.profile))
     this.phase = 'operate'
   }
 
@@ -392,7 +449,7 @@ class Game {
         if (message.by !== room.me) room.unread++
         break
       case 'launch':
-        this.#fly(message.seed, collaboration(message.players, message.contributors))
+        this.#countDown(message.seed, collaboration(message.players, message.contributors))
         break
       case 'error': {
         this.roomError = message.code

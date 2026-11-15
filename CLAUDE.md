@@ -330,6 +330,7 @@ for Sun-synchronous orbits, since that orbit type does not exist without it.
       /net          WebSocket client, message types, role table, reconnect
       /stores       game state: design, phase, room (Svelte runes, game.svelte.ts), tutorial
       /tutorial     the first-run tutorial's steps (pure, tested)
+      /game         stars, badges and best scores (pure, tested); sound effects
       /components   resource bars, option cards, requirement list, charts, team panel
     /views          one view per phase
   /tests            Node-only test support (loads /content for the unit tests)

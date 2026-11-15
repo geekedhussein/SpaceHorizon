@@ -49,7 +49,13 @@
         {game.me?.ready ? uiText.team.notReadyButton : uiText.team.readyButton}
       </button>
     {/if}
-    <button type="button" class="primary" disabled={game.blocked || (team !== null && !game.everyoneReady)} onclick={() => game.launch()}>
+    <button
+      type="button"
+      class="primary go"
+      class:armed={!game.blocked && (team === null || game.everyoneReady)}
+      disabled={game.blocked || (team !== null && !game.everyoneReady)}
+      onclick={() => game.launch()}
+    >
       <span aria-hidden="true">▲</span>
       {text.launch}
     </button>
@@ -66,7 +72,29 @@
     margin: 0 -1rem -1rem;
     padding: 0.6rem 1rem 0.9rem;
     border-top: 1px solid #2a3650;
-    background: #0b101c;
+    background: linear-gradient(180deg, rgba(12, 18, 32, 0.97), #0a0f1b);
+    box-shadow: 0 -8px 18px rgba(0, 0, 0, 0.35);
+  }
+  .go {
+    min-width: 9rem;
+    font-size: 1.05rem;
+  }
+  /* Ready to fly: the launch button breathes. */
+  .armed {
+    animation: armed 1.6s ease-in-out infinite;
+  }
+  @keyframes armed {
+    50% {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 2px 0 #1a6a93,
+        0 0 30px rgba(63, 184, 245, 0.8);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .armed {
+      animation: none;
+    }
   }
   .launch p {
     margin: 0 0 0.5rem;

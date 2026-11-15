@@ -3,6 +3,7 @@
   import { untrack } from 'svelte'
   import Leaderboard from '../lib/components/Leaderboard.svelte'
   import LineChart from '../lib/components/LineChart.svelte'
+  import MissionDebrief from '../lib/components/MissionDebrief.svelte'
   import SaveShare from '../lib/components/SaveShare.svelte'
   import RequirementList from '../lib/components/RequirementList.svelte'
   import { game } from '../lib/stores/game.svelte.ts'
@@ -30,13 +31,17 @@
   let steps = $derived(result?.steps ?? [])
   let day = $state(1)
   let playing = $state(false)
+  /** The debrief card: opened once the playback reaches the end. */
+  let debrief = $state(false)
 
-  // A new flight plays from day 1 to the end.
+  // A new flight plays from day 1 to the end, then shows the debrief. A flight
+  // that never reached orbit has nothing to play, so the debrief comes at once.
   $effect(() => {
     void result
     untrack(() => {
       day = 1
       playing = steps.length > 1
+      debrief = steps.length <= 1
       onday(1)
     })
   })
@@ -48,7 +53,10 @@
     const timer = setInterval(() => {
       day = Math.min(steps.length, day + perTick)
       onday(day)
-      if (day >= steps.length) playing = false
+      if (day >= steps.length) {
+        playing = false
+        debrief = true
+      }
     }, 1000 / TICKS_PER_S)
     return () => clearInterval(timer)
   })
@@ -61,6 +69,7 @@
     playing = false
     day = steps.length
     onday(day)
+    debrief = true
   }
   let step = $derived(steps[Math.min(day, steps.length) - 1])
 
@@ -80,6 +89,21 @@
     <strong>{text.statuses[result.outcome.status]}</strong>
     <span>{fillTemplate(text.daysFlown, { days: result.outcome.endDay, planned: result.plannedDays })}</span>
   </div>
+  <button type="button" class="debrief-open" onclick={() => (debrief = true)}>
+    <span aria-hidden="true">★</span> {uiText.play.debrief.open}
+  </button>
+  {#if debrief}
+    <MissionDebrief
+      {result}
+      rewards={game.rewards}
+      scenario={game.scenario}
+      team={game.room !== null}
+      canRelaunch={!game.blocked}
+      onclose={() => (debrief = false)}
+      onimprove={() => game.go('design')}
+      onagain={() => (game.room ? game.go('verify') : game.launch())}
+    />
+  {/if}
   {#if game.justUnlocked}<p class="note"><strong>{text.unlocked}</strong></p>{/if}
   {#if game.designChangedSinceLaunch}<p class="note">{text.designChanged}</p>{/if}
 
@@ -311,6 +335,9 @@
   a {
     color: #9fd8ff;
     overflow-wrap: anywhere;
+  }
+  .debrief-open {
+    justify-self: start;
   }
   .playback {
     display: flex;

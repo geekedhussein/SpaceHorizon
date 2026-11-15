@@ -447,6 +447,21 @@ The shapes come from `scene3d/builderModel.ts`, which is unit-tested.
   opened from a saved-design link), is remembered as done in the browser's local
   storage, and can be restarted from the Tutorial button. It changes nothing in
   the game itself; in a team, the player's actions follow the usual role rules.
+- **Game layer** (`lib/game/rewards.ts`, unit-tested). Stars, badges, best scores,
+  the launch countdown, confetti and sounds only present a result; none of them
+  changes the simulation or the score. Game-design values:
+  - Three stars, one per objective: reach orbit, keep working for the planned
+    life, meet every requirement.
+  - Badge thresholds: "Top marks" at a score of 90; "Thrifty" when every
+    requirement is met for at most 40% of the budget; "Overachiever" when a
+    requirement is beaten twice over (double a minimum, half a maximum);
+    "Veteran" after 10 flights that reached orbit. The rest follow directly from
+    the result (for example "Nothing wasted": no data lost).
+  - Badges, best scores and flights are kept in the browser's local storage, per
+    browser, with no account. Sandbox flights earn stars only.
+  - The countdown lasts about 3.4 seconds and can be skipped. The result is
+    already computed when it starts; in a team every player counts down from the
+    server's launch message.
 - **Ready-made designs** (`content/ready_designs.json`). Combinations of real parts
   from `/content`, not new data. They were found by trying 155,520 designs for
   `vegetation-monthly`: every orbit, launcher, frame, array, battery, pointing unit
