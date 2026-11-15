@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "launchers.schema.json",
+  "title": "Launch vehicles",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "allOf": [
+      { "$ref": "common.schema.json#/$defs/sourced" },
+      {
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "name": { "$ref": "common.schema.json#/$defs/text" },
+          "provider": { "type": "string", "minLength": 1 },
+          "launch_type": {
+            "description": "dedicated: you buy the whole rocket. rideshare: you buy a place on a shared rocket.",
+            "enum": ["dedicated", "rideshare"]
+          },
+          "cost_musd": {
+            "description": "Launch price in millions of US dollars. For a rideshare this covers included_mass_kg.",
+            "type": "number",
+            "minimum": 0
+          },
+          "included_mass_kg": {
+            "description": "Rideshare only: spacecraft mass covered by cost_musd.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "extra_cost_musd_per_kg": {
+            "description": "Rideshare only: price of each kilogram above included_mass_kg.",
+            "type": "number",
+            "minimum": 0
+          },
+          "price_source": { "type": "string", "minLength": 1 },
+          "capacity_kg_by_orbit": {
+            "description": "Heaviest spacecraft the launcher can carry to each orbit in orbits.json. Use null if it cannot fly there. Every orbit id must appear.",
+            "type": "object",
+            "propertyNames": { "$ref": "common.schema.json#/$defs/id" },
+            "additionalProperties": {
+              "anyOf": [{ "type": "number", "exclusiveMinimum": 0 }, { "type": "null" }]
+            }
+          },
+          "fairing_diameter_m": {
+            "description": "Outer diameter of the nose cone that covers the spacecraft, in metres.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "fairing_height_m": {
+            "description": "Height of the nose cone, in metres.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "launch_attempts": {
+            "description": "Launches flown so far.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "launch_successes": {
+            "description": "Launches that fully succeeded. Partial failures do not count.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "record_as_of": {
+            "description": "Date the launch record was counted, as YYYY-MM-DD.",
+            "type": "string",
+            "format": "date"
+          },
+          "record_source": { "type": "string", "minLength": 1 },
+          "description": { "$ref": "common.schema.json#/$defs/text" },
+          "why_it_matters": { "$ref": "common.schema.json#/$defs/text" }
+        },
+        "required": [
+          "id",
+          "name",
+          "provider",
+          "launch_type",
+          "cost_musd",
+          "capacity_kg_by_orbit",
+          "fairing_diameter_m",
+          "fairing_height_m",
+          "launch_attempts",
+          "launch_successes",
+          "record_as_of",
+          "record_source",
+          "description",
+          "why_it_matters"
+        ]
+      },
+      {
+        "if": { "properties": { "launch_type": { "const": "rideshare" } } },
+        "then": { "required": ["included_mass_kg", "extra_cost_musd_per_kg"] }
+      }
+    ],
+    "unevaluatedProperties": false
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "instruments.schema.json",
+  "title": "Science instruments",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "allOf": [
+      { "$ref": "common.schema.json#/$defs/sourced" },
+      {
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "name": { "$ref": "common.schema.json#/$defs/text" },
+          "manufacturer": { "type": "string", "minLength": 1 },
+          "category": { "const": "instrument" },
+          "mass_kg": { "type": "number", "minimum": 0 },
+          "power_w": {
+            "description": "Power draw while taking images. Negative.",
+            "type": "number",
+            "maximum": 0
+          },
+          "standby_power_w": {
+            "description": "Power draw while switched on but idle. Negative or zero.",
+            "type": "number",
+            "maximum": 0
+          },
+          "cost_musd": {
+            "description": "Price in millions of US dollars.",
+            "type": "number",
+            "minimum": 0
+          },
+          "price_source": { "type": "string", "minLength": 1 },
+          "tier": { "enum": ["simple", "advanced"] },
+          "description": { "$ref": "common.schema.json#/$defs/text" },
+          "why_it_matters": { "$ref": "common.schema.json#/$defs/text" },
+          "data_rate_mbps": {
+            "description": "Data produced while taking images, in megabits per second.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "science_value": {
+            "description": "Game score from 1 (basic) to 10 (best). A game-design value, not a real figure.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "compatible_objectives": {
+            "description": "Objective ids this instrument can serve. Other objectives show it greyed out.",
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/id" },
+            "uniqueItems": true
+          },
+          "limitation": {
+            "description": "One line shown when the instrument is greyed out, saying what it cannot do.",
+            "type": "string",
+            "minLength": 1
+          },
+          "ground_resolution_m_at_500km": {
+            "description": "Size on the ground of one image pixel, in metres, from 500 km altitude.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "swath_km_at_500km": {
+            "description": "Width of the strip of ground seen in one pass, in kilometres, from 500 km altitude.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "band_count": {
+            "description": "Number of colour bands recorded.",
+            "type": "integer",
+            "minimum": 1
+          },
+          "has_near_infrared": {
+            "description": "true if at least one band is near-infrared.",
+            "type": "boolean"
+          },
+          "volume_u": {
+            "description": "Space taken inside the frame, in CubeSat units.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "storage_gb": {
+            "description": "Built-in image storage in gigabytes.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "manufacturer",
+          "category",
+          "mass_kg",
+          "power_w",
+          "cost_musd",
+          "tier",
+          "description",
+          "why_it_matters",
+          "data_rate_mbps",
+          "science_value",
+          "compatible_objectives",
+          "ground_resolution_m_at_500km",
+          "swath_km_at_500km",
+          "band_count",
+          "has_near_infrared"
+        ]
+      }
+    ],
+    "unevaluatedProperties": false
+  }
+}

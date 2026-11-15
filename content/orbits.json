@@ -1,0 +1,55 @@
+[
+  {
+    "id": "iss-like",
+    "name": "Space station orbit (400 km)",
+    "altitude_km": 400,
+    "inclination_deg": 51.6,
+    "eccentricity": 0,
+    "sun_synchronous": false,
+    "description": "The kind of orbit the International Space Station uses. It is low and tilted 51.6 degrees, so it never passes over the far north or the far south.",
+    "why_it_matters": "Low orbits give sharper pictures and are easier for a rocket to reach. But thin air this low slowly drags the spacecraft down, and the tilt leaves the polar regions unseen.",
+    "source": "https://www.nasa.gov/international-space-station-frequently-asked-questions/",
+    "retrieved": "2026-11-15",
+    "notes": "NASA gives the inclination as 51.6 degrees and the altitude as 370 to 460 km. 400 km is our chosen value inside that range; see docs/model-assumptions.md."
+  },
+  {
+    "id": "sso-500",
+    "name": "Sun-synchronous orbit (500 km)",
+    "altitude_km": 500,
+    "inclination_deg": 97.4,
+    "eccentricity": 0,
+    "sun_synchronous": true,
+    "description": "A near-polar orbit that passes over each place at the same local time every day. Many small Earth-imaging satellites fly here.",
+    "why_it_matters": "The Sun is at the same height in every picture of a place, so pictures taken weeks apart can be compared. Passing near the poles lets the spacecraft see the whole Earth.",
+    "source": "Electron Payload User Guide v7.0, https://rocketlabcorp.com/assets/Electron-Payload-User-Guide-7.0-v6.pdf",
+    "retrieved": "2026-11-15",
+    "estimated": true,
+    "estimate_basis": "500 km sun-synchronous is the reference orbit in the Electron and Alpha user guides, which do not state its inclination. 97.4 degrees is computed from the standard J2 nodal-precession condition for a circular orbit. The same formula gives 98.21 degrees at 705 km (Landsat 9 publishes 98.2)."
+  },
+  {
+    "id": "landsat-705",
+    "name": "Landsat orbit (705 km)",
+    "altitude_km": 705,
+    "inclination_deg": 98.2,
+    "eccentricity": 0,
+    "sun_synchronous": true,
+    "local_time_descending_node": "10:12",
+    "description": "The orbit of NASA's Landsat 9 satellite. It is sun-synchronous and crosses the equator at about 10:12 in the morning, local time.",
+    "why_it_matters": "From higher up a camera sees a wider strip of ground, so it covers the Earth sooner. But each pixel covers more ground, so the picture is less sharp, and the rocket can carry less this high.",
+    "source": "https://science.nasa.gov/mission/landsat-9",
+    "retrieved": "2026-11-15"
+  },
+  {
+    "id": "sentinel2-786",
+    "name": "Sentinel-2 orbit (786 km)",
+    "altitude_km": 786,
+    "inclination_deg": 98.62,
+    "eccentricity": 0,
+    "sun_synchronous": true,
+    "local_time_descending_node": "10:30",
+    "description": "The orbit of Europe's Sentinel-2 satellites. It is sun-synchronous and crosses the equator at 10:30 in the morning, local time.",
+    "why_it_matters": "The highest orbit on offer. It gives the widest view and the air is so thin that drag is very small. It costs the most rocket performance and gives the least sharp pictures.",
+    "source": "https://sentiwiki.copernicus.eu/web/s2-mission",
+    "retrieved": "2026-11-15"
+  }
+]

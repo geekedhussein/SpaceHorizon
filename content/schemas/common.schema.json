@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common.schema.json",
+  "title": "Fields shared by every content entry",
+  "$defs": {
+    "id": {
+      "description": "Short unique name used by the code. Lower-case letters, digits and hyphens only. Never change an id once it is in use.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "text": {
+      "description": "Plain-language text shown to players. Short sentences.",
+      "type": "string",
+      "minLength": 1
+    },
+    "sourced": {
+      "description": "Every entry must say where its figures come from.",
+      "type": "object",
+      "properties": {
+        "source": {
+          "description": "URL or document name for the entry's figures. Required.",
+          "type": "string",
+          "minLength": 1
+        },
+        "retrieved": {
+          "description": "Date the source was read, as YYYY-MM-DD.",
+          "type": "string",
+          "format": "date"
+        },
+        "estimated": {
+          "description": "true if any figure in the entry is not taken directly from the source. Must then also be listed in docs/model-assumptions.md.",
+          "type": "boolean"
+        },
+        "estimate_basis": {
+          "description": "Which figures are estimated and how they were worked out.",
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "description": "Notes for the team. Never shown to players.",
+          "type": "string"
+        }
+      },
+      "required": ["source", "retrieved"],
+      "if": {
+        "properties": { "estimated": { "const": true } },
+        "required": ["estimated"]
+      },
+      "then": { "required": ["estimate_basis"] }
+    }
+  }
+}

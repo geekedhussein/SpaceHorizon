@@ -1,0 +1,57 @@
+[
+  {
+    "id": "vegetation-monthly",
+    "name": "Map the world's vegetation every month",
+    "mission_type": "earth-observation",
+    "objective_id": "vegetation-mapping",
+    "summary": "Farmers and scientists want a fresh map of plant health for all land on Earth, every month.",
+    "objective": "Measure plant health over all land once a month. Healthy plants absorb red light and reflect near-infrared light, so the camera must record both.",
+    "budget_musd": 10,
+    "planned_lifetime_years": 2,
+    "requirements": [
+      {
+        "id": "revisit",
+        "label": "See every place at least once every 30 days",
+        "metric": "revisit_days",
+        "comparator": "<=",
+        "threshold": 30,
+        "unit": "days",
+        "why_it_matters": "A monthly map needs a new picture of every place each month. A camera with a narrow view takes longer to cover the Earth."
+      },
+      {
+        "id": "resolution",
+        "label": "Show details 30 m across or smaller",
+        "metric": "ground_resolution_m",
+        "comparator": "<=",
+        "threshold": 30,
+        "unit": "m",
+        "why_it_matters": "Each pixel of the picture covers a square of ground. Smaller pixels show smaller fields and forest patches. Flying higher makes each pixel cover more ground."
+      },
+      {
+        "id": "data",
+        "label": "Send at least 500 GB of pictures to the ground each month",
+        "metric": "data_returned_gb_per_month",
+        "comparator": ">=",
+        "threshold": 500,
+        "unit": "GB per month",
+        "why_it_matters": "Pictures are only useful once they reach the ground. The radio and the ground stations set how much data gets down."
+      },
+      {
+        "id": "lifetime",
+        "label": "Keep working for at least 2 years",
+        "metric": "lifetime_years",
+        "comparator": ">=",
+        "threshold": 2,
+        "unit": "years",
+        "why_it_matters": "Plant health changes with the seasons, so the maps must cover more than one year. Low orbits decay sooner because of air drag."
+      }
+    ],
+    "real_mission_name": "Landsat 9",
+    "real_mission_fact": "NASA's Landsat 9 flies 705 km up and photographs each place every 16 days. Its main camera shows details 30 m across in a strip of ground 185 km wide.",
+    "real_mission_source": "https://science.nasa.gov/mission/landsat-9",
+    "source": "https://science.nasa.gov/mission/landsat-9",
+    "retrieved": "2026-11-15",
+    "estimated": true,
+    "estimate_basis": "The 30 m threshold matches Landsat 9's main camera. The 30-day revisit, 2-year lifetime and US$10 million budget are game-design values. The 500 GB threshold is derived: one map of all land (148.94 million km2) in two bands (red and near-infrared) at 30 m pixels and 12 bits per pixel, uncompressed, is 496 GB, rounded to 500. All thresholds will be re-tuned once the simulation exists."
+  }
+]

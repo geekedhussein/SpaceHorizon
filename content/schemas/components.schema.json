@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "components.schema.json",
+  "title": "Spacecraft components (everything except instruments)",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "allOf": [
+      { "$ref": "common.schema.json#/$defs/sourced" },
+      {
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "name": { "$ref": "common.schema.json#/$defs/text" },
+          "manufacturer": { "type": "string", "minLength": 1 },
+          "category": {
+            "enum": [
+              "structure",
+              "solar_array",
+              "battery",
+              "communications",
+              "computer",
+              "attitude_control",
+              "thermal",
+              "propulsion"
+            ]
+          },
+          "mass_kg": { "type": "number", "minimum": 0 },
+          "power_w": {
+            "description": "Power while working. Negative draws power, positive generates it. For solar arrays: peak output in sunlight when new.",
+            "type": "number"
+          },
+          "standby_power_w": {
+            "description": "Power draw while switched on but idle. Negative or zero.",
+            "type": "number",
+            "maximum": 0
+          },
+          "cost_musd": {
+            "description": "Price in millions of US dollars.",
+            "type": "number",
+            "minimum": 0
+          },
+          "price_source": {
+            "description": "Where the price comes from, if different from source.",
+            "type": "string",
+            "minLength": 1
+          },
+          "tier": { "enum": ["simple", "advanced"] },
+          "description": { "$ref": "common.schema.json#/$defs/text" },
+          "why_it_matters": { "$ref": "common.schema.json#/$defs/text" },
+          "form_factor_u": {
+            "description": "Structures: size of the CubeSat frame in units (1U is a 10 cm cube).",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "fits_form_factors_u": {
+            "description": "Frame sizes this part is made for. Leave out if it fits any frame.",
+            "type": "array",
+            "items": { "type": "number", "exclusiveMinimum": 0 },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "capacity_wh": {
+            "description": "Batteries: stored energy in watt-hours.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "max_data_rate_mbps": {
+            "description": "Radios: highest downlink data rate in megabits per second.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "frequency_mhz": {
+            "description": "Radios: centre of the downlink band in megahertz.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "rf_power_w": {
+            "description": "Radios: radio power sent to the antenna in watts.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "storage_gb": {
+            "description": "Computers: data storage in gigabytes.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "pointing_accuracy_deg": {
+            "description": "Attitude control: how closely it can hold a direction, in degrees.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "propellant_kg": {
+            "description": "Propulsion: propellant carried. Already included in mass_kg.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "isp_s": {
+            "description": "Propulsion: specific impulse in seconds.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "thrust_mn": {
+            "description": "Propulsion: thrust in millinewtons.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "total_impulse_ns": {
+            "description": "Propulsion: total impulse in newton-seconds.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "manufacturer",
+          "category",
+          "mass_kg",
+          "power_w",
+          "cost_musd",
+          "tier",
+          "description",
+          "why_it_matters"
+        ]
+      },
+      {
+        "if": { "properties": { "category": { "const": "structure" } } },
+        "then": { "required": ["form_factor_u"] }
+      },
+      {
+        "if": { "properties": { "category": { "const": "solar_array" } } },
+        "then": { "properties": { "power_w": { "exclusiveMinimum": 0 } } },
+        "else": { "properties": { "power_w": { "maximum": 0 } } }
+      },
+      {
+        "if": { "properties": { "category": { "const": "battery" } } },
+        "then": { "required": ["capacity_wh"] }
+      },
+      {
+        "if": { "properties": { "category": { "const": "communications" } } },
+        "then": { "required": ["max_data_rate_mbps", "frequency_mhz", "rf_power_w"] }
+      },
+      {
+        "if": { "properties": { "category": { "const": "propulsion" } } },
+        "then": { "required": ["propellant_kg", "isp_s"] }
+      }
+    ],
+    "unevaluatedProperties": false
+  }
+}

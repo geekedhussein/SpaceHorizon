@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "orbits.schema.json",
+  "title": "Orbits the player can choose",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "allOf": [
+      { "$ref": "common.schema.json#/$defs/sourced" },
+      {
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "name": { "$ref": "common.schema.json#/$defs/text" },
+          "altitude_km": {
+            "description": "Height above Earth's surface in kilometres. For a non-circular orbit, the mean altitude.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "inclination_deg": {
+            "description": "Tilt of the orbit against the equator, in degrees. Above 90 means the orbit goes slightly against Earth's spin.",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 180
+          },
+          "eccentricity": {
+            "description": "0 is a perfect circle.",
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMaximum": 1
+          },
+          "sun_synchronous": {
+            "description": "true if the orbit passes over each place at the same local time every day.",
+            "type": "boolean"
+          },
+          "local_time_descending_node": {
+            "description": "Sun-synchronous orbits: local time when the spacecraft crosses the equator going south, as HH:MM.",
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+          },
+          "description": { "$ref": "common.schema.json#/$defs/text" },
+          "why_it_matters": { "$ref": "common.schema.json#/$defs/text" }
+        },
+        "required": [
+          "id",
+          "name",
+          "altitude_km",
+          "inclination_deg",
+          "eccentricity",
+          "sun_synchronous",
+          "description",
+          "why_it_matters"
+        ]
+      }
+    ],
+    "unevaluatedProperties": false
+  }
+}
