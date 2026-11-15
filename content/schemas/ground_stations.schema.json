@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ground_stations.schema.json",
+  "title": "Ground stations",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "allOf": [
+      { "$ref": "common.schema.json#/$defs/sourced" },
+      {
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
+          "name": { "$ref": "common.schema.json#/$defs/text" },
+          "operator": { "type": "string", "minLength": 1 },
+          "antenna_name": {
+            "description": "The operator's name for the dish these figures describe.",
+            "type": "string",
+            "minLength": 1
+          },
+          "antenna_diameter_m": { "type": "number", "exclusiveMinimum": 0 },
+          "latitude_deg": {
+            "description": "Degrees north of the equator. South is negative.",
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude_deg": {
+            "description": "Degrees east of Greenwich. West is negative.",
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "s_band_rx_min_mhz": {
+            "description": "Lowest S-band frequency the station can receive, in megahertz. Leave all three s_band fields out if the station has no S-band receiver.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "s_band_rx_max_mhz": { "type": "number", "exclusiveMinimum": 0 },
+          "s_band_g_over_t_db_k": {
+            "description": "S-band receive quality (antenna gain over noise temperature) in dB/K. Higher hears fainter signals.",
+            "type": "number"
+          },
+          "x_band_rx_min_mhz": {
+            "description": "Lowest X-band frequency the station can receive, in megahertz. Leave all three x_band fields out if the station has no X-band receiver.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "x_band_rx_max_mhz": { "type": "number", "exclusiveMinimum": 0 },
+          "x_band_g_over_t_db_k": {
+            "description": "X-band receive quality in dB/K.",
+            "type": "number"
+          },
+          "cost_usd_per_pass": {
+            "description": "Price of one booked pass, in US dollars (not millions).",
+            "type": "number",
+            "minimum": 0
+          },
+          "price_source": {
+            "description": "Where the price comes from, if different from source.",
+            "type": "string",
+            "minLength": 1
+          },
+          "description": { "$ref": "common.schema.json#/$defs/text" },
+          "why_it_matters": { "$ref": "common.schema.json#/$defs/text" }
+        },
+        "required": [
+          "id",
+          "name",
+          "operator",
+          "antenna_name",
+          "antenna_diameter_m",
+          "latitude_deg",
+          "longitude_deg",
+          "cost_usd_per_pass",
+          "description",
+          "why_it_matters"
+        ],
+        "dependentRequired": {
+          "s_band_rx_min_mhz": ["s_band_rx_max_mhz", "s_band_g_over_t_db_k"],
+          "s_band_rx_max_mhz": ["s_band_rx_min_mhz", "s_band_g_over_t_db_k"],
+          "s_band_g_over_t_db_k": ["s_band_rx_min_mhz", "s_band_rx_max_mhz"],
+          "x_band_rx_min_mhz": ["x_band_rx_max_mhz", "x_band_g_over_t_db_k"],
+          "x_band_rx_max_mhz": ["x_band_rx_min_mhz", "x_band_g_over_t_db_k"],
+          "x_band_g_over_t_db_k": ["x_band_rx_min_mhz", "x_band_rx_max_mhz"]
+        },
+        "anyOf": [{ "required": ["s_band_rx_min_mhz"] }, { "required": ["x_band_rx_min_mhz"] }]
+      }
+    ],
+    "unevaluatedProperties": false
+  }
+}

@@ -29,10 +29,10 @@
       },
       {
         "id": "data",
-        "label": "Send at least 500 GB of pictures to the ground each month",
+        "label": "Send at least 2,000 GB of pictures to the ground each month",
         "metric": "data_returned_gb_per_month",
         "comparator": ">=",
-        "threshold": 500,
+        "threshold": 2000,
         "unit": "GB per month",
         "why_it_matters": "Pictures are only useful once they reach the ground. The radio and the ground stations set how much data gets down."
       },
@@ -52,6 +52,6 @@
     "source": "https://science.nasa.gov/mission/landsat-9",
     "retrieved": "2026-11-15",
     "estimated": true,
-    "estimate_basis": "The 30 m threshold matches Landsat 9's main camera. The 30-day revisit, 2-year lifetime and US$10 million budget are game-design values. The 500 GB threshold is derived: one map of all land (148.94 million km2) in two bands (red and near-infrared) at 30 m pixels and 12 bits per pixel, uncompressed, is 496 GB, rounded to 500. All thresholds will be re-tuned once the simulation exists."
+    "estimate_basis": "The 30 m threshold matches Landsat 9's main camera. The 30-day revisit, 2-year lifetime and US$10 million budget are game-design values. The 2,000 GB threshold is derived: one map of all land (148.94 million km2) at 30 m pixels, in the 8 colour bands the suitable cameras record, at 12 bits per pixel, uncompressed, is 1,986 GB, rounded to 2,000. It was 500 GB (two bands) before the simulation existed; the cameras in the game always record all 8 bands, so the old figure did not match a full map."
   }
 ]

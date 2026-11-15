@@ -45,6 +45,8 @@ can be built, and should be confirmed or replaced.
 | `thruster-enpulsion-nano` | `isp_s`, `total_impulse_ns` | Lower bound of the published 2,000 to 6,000 s range, and the published minimum total impulse. |
 | `battery-36wh-orbastro` | `cost_musd` | List price of 7,000 GBP (2021) converted at 1.3227 USD per GBP, the European Central Bank reference rate for 13 Nov 2026. |
 | `battery-99wh-endurosat` | `cost_musd` | No public price. Scaled by stored energy from `battery-36wh-orbastro` (7,000 GBP x 99/36), same exchange rate. |
+| `solar-deployable-3u-endurosat`, `solar-deployable-6u-endurosat` | `deployed_area_m2` | Not published. Number of cells x the area per cell of the 7-cell 3U body panel (one 100 x 340.5 mm face). Every cell is counted as unfolded, which overstates drag if some cells sit on the body. |
+| `radio-uhf-endurosat`, `radio-sband-endurosat`, `radio-xband-endurosat` | `antenna_gain_dbi`, `antenna_mass_kg`, `cost_musd` | Each radio is paired with its maker's matching antenna. Antenna prices are not public and are left out of `cost_musd`. The UHF and X-band gains are the published lower bounds ("more than 0 dBi", "more than 16 dBi"). |
 | `vegetation-monthly` | requirement thresholds | See section 2. |
 
 ## 2. Game-design values
@@ -59,11 +61,11 @@ game and may change during balancing.
   - `budget_musd` = 10 and `planned_lifetime_years` = 2.
   - Revisit threshold of 30 days ("monthly").
   - Resolution threshold of 30 m, matching Landsat 9's main camera.
-  - Data threshold of 500 GB per month. Derivation: all land on Earth
-    (148.94 million km2) x 1,111 pixels per km2 at 30 m x 2 bands (red and
-    near-infrared) x 12 bits = 496 GB, uncompressed, rounded to 500.
-  - All four thresholds will be checked against the simulation in build step 3 and
-    re-tuned if no real design can meet them or every design can.
+  - Data threshold of 2,000 GB per month. Derivation: all land on Earth
+    (148.94 million km2) x 1,111 pixels per km2 at 30 m x 8 bands x 12 bits =
+    1,986 GB, uncompressed, rounded to 2,000. The threshold was 500 GB (two bands)
+    before the simulation existed. The cameras in the game always record all 8 bands,
+    so 500 GB did not correspond to a full map.
 
 ## 3. Deliberate approximations in the content
 
@@ -80,14 +82,28 @@ game and may change during balancing.
   to slightly different sun-synchronous altitudes on each mission; other orbits are
   sold by quote only.
 - **Radio frequency.** `frequency_mhz` is the centre of the published downlink band.
+- **CubeSat size and mass limits** (`body_size_mm`, `max_mass_kg` on the frames) are
+  the CubeSat Design Specification's limits for a whole spacecraft. They were read
+  from a published table of the specification, not from the specification's own PDF.
+- **Ground stations.** One dish per site, with the figures of the Near Earth Network
+  guide's overview table (Table 2-1). Where a detail table in the same guide differs,
+  the entry's `notes` says so. Three of the six sites are commercial (KSAT, SSC).
+- **Ground-station price.** Every station costs US$491 per pass. This is NASA's 2018
+  planning rate for a Near Earth Network pass of up to 30 minutes. Commercial
+  operators do not publish prices, so the same rate is used for their sites.
+- **No UHF ground station.** The Near Earth Network has no UHF receivers, so
+  `radio-uhf-endurosat` cannot reach any station in the game yet. Real CubeSat teams
+  use their own or university UHF stations.
 - **Launch prices are list prices from different years** (Electron 2020, Alpha 2022,
   rideshare 2026) and are not adjusted for inflation. The same holds for component
   prices (2021 to 2026).
 
 ## 4. Not in the starter set yet
 
-- Ground stations, random events, antennas and thermal parts have no content yet.
-- Development time per component is not recorded yet.
+- Random events and thermal parts have no content yet (events: build step 8).
+- Antennas are not separate parts. Each radio carries its maker's matching antenna.
+- Development time per component is not recorded yet, so the simulation does not
+  model it.
 - The real-mission comparison holds one mission (Landsat 9) inside the scenario entry.
 
 ## 5. Physics model

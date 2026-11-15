@@ -12,8 +12,12 @@
     "description": "A metal frame the size of a loaf of bread: three 10 cm cubes in a row. Every other part bolts into it.",
     "why_it_matters": "The frame sets how much room you have. A small frame is light and cheap to launch, but it fills up fast.",
     "form_factor_u": 3,
+    "body_size_mm": [100, 100, 340.5],
+    "max_mass_kg": 6,
+    "size_source": "CubeSat Design Specification Rev 14.1 (Cal Poly, 2022), as tabulated at https://cubesat-specs.readthedocs.io/en/latest/_modules/cubesat_specs/form_factors.html",
     "source": "https://www.satcatalog.com/component/3-unit-cubesat-structure/",
-    "retrieved": "2026-11-15"
+    "retrieved": "2026-11-15",
+    "notes": "body_size_mm and max_mass_kg are the CubeSat standard's limits for a whole 3U spacecraft, not figures for this frame alone. They were read from a table of the standard, not from the standard's own PDF."
   },
   {
     "id": "structure-6u-isispace",
@@ -28,8 +32,12 @@
     "description": "A frame twice the size of the 3U: six 10 cm cubes, two rows of three.",
     "why_it_matters": "More room for a bigger camera, battery and radio. The frame is heavier, and bigger parts add more mass and cost.",
     "form_factor_u": 6,
+    "body_size_mm": [226.3, 100, 366],
+    "max_mass_kg": 12,
+    "size_source": "CubeSat Design Specification Rev 14.1 (Cal Poly, 2022), as tabulated at https://cubesat-specs.readthedocs.io/en/latest/_modules/cubesat_specs/form_factors.html",
     "source": "https://www.satcatalog.com/component/6-unit-cubesat-structure/",
-    "retrieved": "2026-11-15"
+    "retrieved": "2026-11-15",
+    "notes": "body_size_mm and max_mass_kg are the CubeSat standard's limits for a whole 6U spacecraft, not figures for this frame alone. They were read from a table of the standard, not from the standard's own PDF."
   },
   {
     "id": "solar-panel-3u-endurosat",
@@ -58,10 +66,11 @@
     "description": "A double panel of 21 solar cells that unfolds from a 3U frame after launch. It makes up to 25.2 W in sunlight.",
     "why_it_matters": "Unfolding panels give three times the power of a fixed one. They add mass and cost, and they must unfold correctly in space.",
     "fits_form_factors_u": [3],
+    "deployed_area_m2": 0.102,
     "source": "https://satsearch.co/products/endurosat-3u-deployable-solar-array",
     "retrieved": "2026-11-15",
     "estimated": true,
-    "estimate_basis": "The source lists a single (14 cells, 16.8 W) and a double (21 cells, 25.2 W) version, with mass 285 to 468 g and price US$21,000 to 23,400 as ranges. We assume the top of each range belongs to the double version."
+    "estimate_basis": "The source lists a single (14 cells, 16.8 W) and a double (21 cells, 25.2 W) version, with mass 285 to 468 g and price US$21,000 to 23,400 as ranges. We assume the top of each range belongs to the double version. deployed_area_m2 is not published: 21 cells at the area of the 7-cell 3U panel (one 100 x 340.5 mm face holds 7 cells), with every cell counted as unfolded."
   },
   {
     "id": "solar-deployable-6u-endurosat",
@@ -75,10 +84,11 @@
     "description": "A large array of 32 solar cells that unfolds from a 6U frame. It makes up to 38.4 W in sunlight.",
     "why_it_matters": "A power-hungry radio or thruster needs a big array. This one is the heaviest and most expensive power source here.",
     "fits_form_factors_u": [6],
+    "deployed_area_m2": 0.156,
     "source": "https://satsearch.co/products/endurosat-6u-deployable-solar-array",
     "retrieved": "2026-11-15",
     "estimated": true,
-    "estimate_basis": "The source gives the mass as a range, 655 to 1,065 g, across versions. The top of the range is used."
+    "estimate_basis": "The source gives the mass as a range, 655 to 1,065 g, across versions. The top of the range is used. deployed_area_m2 is not published: 32 cells at the area of the 7-cell 3U panel (one 100 x 340.5 mm face holds 7 cells), with every cell counted as unfolded."
   },
   {
     "id": "battery-36wh-orbastro",
@@ -131,8 +141,15 @@
     "max_data_rate_mbps": 0.0196,
     "frequency_mhz": 436.5,
     "rf_power_w": 2,
+    "two_way": true,
+    "antenna_name": "EnduroSat UHF Antenna III",
+    "antenna_gain_dbi": 0,
+    "antenna_mass_kg": 0.21,
+    "antenna_source": "https://www.endurosat.com/products/uhf-antenna-iii",
     "source": "https://www.endurosat.com/products/uhf-transceiver-ii/",
     "retrieved": "2026-11-15",
+    "estimated": true,
+    "estimate_basis": "The radio is paired with its maker's matching antenna. The antenna's price is not public and is not counted in cost_musd. antenna_gain_dbi is the published lower bound (more than 0 dBi).",
     "notes": "frequency_mhz is the centre of the 435-438 MHz band. rf_power_w is 33 dBm (2 W). power_w is the DC draw while transmitting at 33 dBm."
   },
   {
@@ -150,8 +167,15 @@
     "max_data_rate_mbps": 0.125,
     "frequency_mhz": 2245,
     "rf_power_w": 2,
+    "two_way": true,
+    "antenna_name": "EnduroSat S-band antenna (wideband)",
+    "antenna_gain_dbi": 5,
+    "antenna_mass_kg": 0.115,
+    "antenna_source": "https://satsearch.co/products/endurosat-s-band-antenna-wideband",
     "source": "https://satsearch.co/products/endurosat-s-band-receiver",
     "retrieved": "2026-11-15",
+    "estimated": true,
+    "estimate_basis": "The radio is paired with its maker's matching antenna. The antenna's price is not public and is not counted in cost_musd.",
     "notes": "frequency_mhz is the centre of the 2200-2290 MHz downlink band. rf_power_w is 33 dBm (2 W). power_w is the maximum DC draw while transmitting; standby_power_w is the receive draw."
   },
   {
@@ -169,8 +193,15 @@
     "max_data_rate_mbps": 150,
     "frequency_mhz": 8212.5,
     "rf_power_w": 2,
+    "two_way": false,
+    "antenna_name": "EnduroSat X-band 4x4 patch array",
+    "antenna_gain_dbi": 16,
+    "antenna_mass_kg": 0.053,
+    "antenna_source": "https://satsearch.co/products/endurosat-x-band-4x4-patch-array-antenna",
     "source": "https://endurosat.com/products/x-band-transmitter/",
     "retrieved": "2026-11-15",
+    "estimated": true,
+    "estimate_basis": "The radio is paired with its maker's matching antenna. The antenna's price is not public and is not counted in cost_musd. antenna_gain_dbi is the published lower bound (more than 16 dBi).",
     "notes": "Mass is the manufacturer's 396 g (+/- 5%); satsearch lists 270 g. frequency_mhz is the centre of the 8025-8400 MHz band. rf_power_w is the 2 W maximum; power_w is the DC draw at that setting."
   },
   {

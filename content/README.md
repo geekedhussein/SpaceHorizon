@@ -10,6 +10,7 @@ without touching any code.
 | `instruments.json` | Cameras and other science instruments |
 | `launchers.json` | Rockets |
 | `orbits.json` | Orbits the player can pick |
+| `ground_stations.json` | Dish antennas on the ground that receive the spacecraft's data |
 | `scenarios.json` | Missions, each with its objective and requirements |
 | `schemas/` | The rules each file must follow. Edit these only together with the code. |
 
@@ -50,10 +51,12 @@ fields:
 
 | Category | Extra fields |
 | --- | --- |
-| `structure` | `form_factor_u`: frame size in CubeSat units (1U is a 10 cm cube) |
+| `structure` | `form_factor_u`: frame size in CubeSat units (1U is a 10 cm cube); `body_size_mm`: outside size of the whole spacecraft, three numbers; `max_mass_kg`: the most the whole spacecraft may weigh; `size_source` |
+| `solar_array` | optional `deployed_area_m2`: area of the panels that unfold away from the body (they add air drag) |
 | `battery` | `capacity_wh` |
-| `communications` | `max_data_rate_mbps`, `frequency_mhz` (centre of the downlink band), `rf_power_w` |
-| `propulsion` | `propellant_kg` (already counted in `mass_kg`), `isp_s`; optional `thrust_mn`, `total_impulse_ns` |
+| `communications` | `max_data_rate_mbps`, `frequency_mhz` (centre of the downlink band), `rf_power_w`, `two_way` (can it receive commands?), and the paired antenna: `antenna_name`, `antenna_gain_dbi`, `antenna_mass_kg` (not counted in `mass_kg`), `antenna_source` |
+| `computer` | `storage_gb` |
+| `propulsion` | `propellant_kg` (already counted in `mass_kg`), `isp_s`, `thrust_mn`; optional `total_impulse_ns` |
 
 `fits_form_factors_u` lists the frame sizes a part is made for. Leave it out if the
 part fits any frame.
@@ -80,6 +83,17 @@ part fits any frame.
 
 Only the altitude, tilt and shape are stored. The game works out the period, speed
 and time in shadow from these.
+
+### Ground stations (`ground_stations.json`)
+
+- `latitude_deg` is north of the equator and `longitude_deg` is east of Greenwich.
+  South and west are negative.
+- Each band a station can receive has three fields: the lowest and highest frequency
+  (`s_band_rx_min_mhz`, `s_band_rx_max_mhz`) and the receive quality
+  (`s_band_g_over_t_db_k`). The X-band fields work the same way. Leave all three out
+  if the station does not have that band. A radio can use a station only if its
+  `frequency_mhz` lies inside one of the station's bands.
+- `cost_usd_per_pass` is in US dollars, **not** millions.
 
 ### Scenarios (`scenarios.json`)
 

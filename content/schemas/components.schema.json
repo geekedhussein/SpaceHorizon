@@ -53,6 +53,28 @@
             "type": "number",
             "exclusiveMinimum": 0
           },
+          "body_size_mm": {
+            "description": "Structures: outside size of the whole spacecraft body in millimetres, as three numbers.",
+            "type": "array",
+            "items": { "type": "number", "exclusiveMinimum": 0 },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "max_mass_kg": {
+            "description": "Structures: the most the whole spacecraft may weigh in this frame size.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "size_source": {
+            "description": "Structures: where body_size_mm and max_mass_kg come from.",
+            "type": "string",
+            "minLength": 1
+          },
+          "deployed_area_m2": {
+            "description": "Solar arrays: area of the panels that unfold away from the body. Leave out for panels fixed to the body.",
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
           "fits_form_factors_u": {
             "description": "Frame sizes this part is made for. Leave out if it fits any frame.",
             "type": "array",
@@ -79,6 +101,29 @@
             "description": "Radios: radio power sent to the antenna in watts.",
             "type": "number",
             "exclusiveMinimum": 0
+          },
+          "two_way": {
+            "description": "Radios: true if the radio can also receive commands from the ground.",
+            "type": "boolean"
+          },
+          "antenna_name": {
+            "description": "Radios: the antenna the radio is paired with.",
+            "type": "string",
+            "minLength": 1
+          },
+          "antenna_gain_dbi": {
+            "description": "Radios: how strongly the antenna focuses the signal, in dBi.",
+            "type": "number"
+          },
+          "antenna_mass_kg": {
+            "description": "Radios: mass of the antenna. Not included in mass_kg.",
+            "type": "number",
+            "minimum": 0
+          },
+          "antenna_source": {
+            "description": "Radios: where the antenna figures come from.",
+            "type": "string",
+            "minLength": 1
           },
           "storage_gb": {
             "description": "Computers: data storage in gigabytes.",
@@ -126,7 +171,7 @@
       },
       {
         "if": { "properties": { "category": { "const": "structure" } } },
-        "then": { "required": ["form_factor_u"] }
+        "then": { "required": ["form_factor_u", "body_size_mm", "max_mass_kg", "size_source"] }
       },
       {
         "if": { "properties": { "category": { "const": "solar_array" } } },
@@ -139,11 +184,26 @@
       },
       {
         "if": { "properties": { "category": { "const": "communications" } } },
-        "then": { "required": ["max_data_rate_mbps", "frequency_mhz", "rf_power_w"] }
+        "then": {
+          "required": [
+            "max_data_rate_mbps",
+            "frequency_mhz",
+            "rf_power_w",
+            "two_way",
+            "antenna_name",
+            "antenna_gain_dbi",
+            "antenna_mass_kg",
+            "antenna_source"
+          ]
+        }
       },
       {
         "if": { "properties": { "category": { "const": "propulsion" } } },
-        "then": { "required": ["propellant_kg", "isp_s"] }
+        "then": { "required": ["propellant_kg", "isp_s", "thrust_mn"] }
+      },
+      {
+        "if": { "properties": { "category": { "const": "computer" } } },
+        "then": { "required": ["storage_gb"] }
       }
     ],
     "unevaluatedProperties": false

@@ -17,7 +17,14 @@ function readJson(path: string): unknown {
 
 type Entry = Record<string, unknown> & { id: string }
 
-const FILES = ['components', 'instruments', 'launchers', 'orbits', 'scenarios'] as const
+const FILES = [
+  'components',
+  'instruments',
+  'launchers',
+  'orbits',
+  'scenarios',
+  'ground_stations',
+] as const
 type FileName = (typeof FILES)[number]
 
 const content = Object.fromEntries(
@@ -123,6 +130,33 @@ describe('links between content files', () => {
       )
       expect(served, scenario.id).toBe(true)
     }
+  })
+
+  it('every ground station lists its receive bands from low to high', () => {
+    for (const station of content.ground_stations) {
+      for (const band of ['s_band', 'x_band']) {
+        const min = station[`${band}_rx_min_mhz`] as number | undefined
+        const max = station[`${band}_rx_max_mhz`] as number | undefined
+        if (min !== undefined && max !== undefined) expect(min, station.id).toBeLessThan(max)
+      }
+    }
+  })
+
+  it('at least one ground station can hear a two-way radio', () => {
+    // Without one, no design could receive commands.
+    const radios = content.components.filter(
+      (part) => part.category === 'communications' && part.two_way === true,
+    )
+    const heard = radios.some((radio) =>
+      content.ground_stations.some((station) =>
+        ['s_band', 'x_band'].some(
+          (band) =>
+            (radio.frequency_mhz as number) >= (station[`${band}_rx_min_mhz`] as number) &&
+            (radio.frequency_mhz as number) <= (station[`${band}_rx_max_mhz`] as number),
+        ),
+      ),
+    )
+    expect(heard).toBe(true)
   })
 
   it('an instrument that serves no objective says why', () => {
