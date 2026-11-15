@@ -1,13 +1,25 @@
 <script lang="ts">
   // The pre-launch checks, problems first. Each says what is wrong and what
   // to change.
+  import type { RoomPlayer } from '../net/messages.ts'
+  import { CHECK_ROLES, holderOf } from '../net/roles.ts'
   import type { ConstraintCheck } from '../sim/types.ts'
-  import { describeCheck, uiText } from '../strings/en.ts'
+  import { describeCheck, fillTemplate, uiText } from '../strings/en.ts'
 
   interface Props {
     checks: ConstraintCheck[]
+    /** In a team: the players, so each problem can name who can fix it. */
+    players?: RoomPlayer[]
   }
-  let { checks }: Props = $props()
+  let { checks, players }: Props = $props()
+
+  /** "Spacecraft engineer (Ben), Science lead (Ada)" for a check, in a team. */
+  function owners(check: ConstraintCheck): string | null {
+    if (!players || players.length < 2) return null
+    return CHECK_ROLES[check.id]
+      .map((role) => `${uiText.team.roles[role].name} (${holderOf(role, players)?.name ?? '?'})`)
+      .join(', ')
+  }
   const text = uiText.verify
   const SYMBOL = { ok: '✓', risk: '!', blocked: '✕' } as const
 
@@ -26,6 +38,9 @@
     </div>
     <div class="text">{words.text}</div>
     {#if words.fix}<div class="fix"><strong>{text.fix}</strong> {words.fix}</div>{/if}
+    {#if words.fix && owners(check)}
+      <div class="owners">{fillTemplate(uiText.team.whoCanFix, { owners: owners(check) ?? '' })}</div>
+    {/if}
   </li>
 {/snippet}
 
@@ -95,8 +110,13 @@
     margin-top: 0.2rem;
     color: #c3cbd9;
   }
-  .fix {
+  .fix,
+  .owners {
     margin-top: 0.2rem;
+  }
+  .owners {
+    color: #dfe6f1;
+    font-weight: 600;
   }
   summary {
     margin-bottom: 0.4rem;

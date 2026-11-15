@@ -327,10 +327,10 @@ for Sun-synchronous orbits, since that orbit type does not exist without it.
       /content      schema and cross-reference test for /content (typed access later)
       /strings      all user-facing text, one file per language (en.ts first)
       /scene3d      Three.js scenes: builder, orbit view, playback; asset loading
-      /net          WebSocket client, patch apply, reconnect
-      /stores       Svelte stores: design, room, ui
-      /components   resource bars, part picker, requirement list, timeline, report
-    /routes or /views   one view per phase
+      /net          WebSocket client, message types, role table, reconnect
+      /stores       game state: design, phase, room (Svelte runes, game.svelte.ts)
+      /components   resource bars, option cards, requirement list, charts, team panel
+    /views          one view per phase
   /tests            Node-only test support (loads /content for the unit tests)
   /static
 /content            JSON: components, instruments, launchers, orbits, ground_stations,
@@ -339,7 +339,8 @@ for Sun-synchronous orbits, since that orbit type does not exist without it.
   README.md         editing guide for non-coders
 /server
   /app
-    main.py         FastAPI app, static mount, routers
+    main.py         FastAPI app, REST routes, static mount
+    config.py       limits and paths, each settable with an SH_* environment variable
     rooms.py        in-memory room manager
     ws.py           WebSocket endpoint and message handling
     db.py           SQLite access
@@ -370,16 +371,28 @@ these files, so keep them flat and well commented in an adjacent README.
 
 JSON messages with a `type` field. Validate every message with Pydantic.
 
-Client to server: `join {name, role?}`, `patch {path, value, base_rev}`,
+Client to server: `join {name, role?, player_id?}`, `patch {path, value, base_rev}`,
 `ready {ready}`, `phase {phase}`, `chat {text}`, `launch`.
 
-Server to client: `state {full room state, rev}` (on join only),
-`patch {path, value, rev, by}`, `players {...}`, `error {code, message}`,
-`launch {seed}`.
+Server to client: `state {full room state, rev, you}` (on join only),
+`patch {path, value, rev, by}`, `players {players}`, `chat {by, name, text}`,
+`error {code, message, path?, value?}`, `launch {seed, players, contributors}`.
 
 Rules: the server is the authority on room state and assigns `rev`. It rejects a patch
 whose `path` is outside the sender's role, and a `launch` unless all players are
 ready. On reconnect the client sends `join` again and receives full state.
+
+- A patch replaces one whole field: `scenarioId`, `difficulty`, `sandbox`, or
+  `design.<field>`. The table of which role owns which path is `PATH_ROLES` in
+  `server/app/models.py`, mirrored in `client/src/lib/net/roles.ts` (a client test
+  checks the two match).
+- A patch is refused as stale only if another player changed the same path after
+  `base_rev`. A refusal carries the server's current `value`, so the client can show it.
+- Any accepted patch clears every player's `ready`.
+- `phase` moves the whole team to a step. It is sent out as a `patch` on path `phase`.
+- `player_id` is chosen by the client and kept for the visit, so a reconnect is the
+  same player. `launch` carries the raw counts for the client's teamwork score; the
+  server does not score.
 
 ### SQLite tables
 
@@ -417,13 +430,15 @@ npm run dev          # Vite dev server, proxies /api and /ws to :8000
 npm run build        # static build to client/dist
 npm run test
 npm run check        # svelte-check and type check
+npm run start        # build the client and serve the whole game on :8000 (needs the server venv)
 
-# server
-cd server && python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000              # development
-uvicorn app.main:app --host 0.0.0.0 --port 8000        # serve to the local network
-pytest
+# server (call the venv's Python by path: a shell alias for python or pip
+# would otherwise bypass the venv)
+cd server && python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m uvicorn app.main:app --reload --port 8000        # development
+.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000  # serve to the local network
+.venv/bin/python -m pytest
 ```
 
 In production the server serves `client/dist` as static files, so one process and one

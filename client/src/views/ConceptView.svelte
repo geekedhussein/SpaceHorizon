@@ -1,6 +1,7 @@
 <script lang="ts">
   // Step 2: the kind of mission, its four segments, and the orbit.
   import { catalog } from '../lib/content/index.ts'
+  import LockNote from '../lib/components/LockNote.svelte'
   import OptionCard from '../lib/components/OptionCard.svelte'
   import { orbitFigures } from '../lib/sim/budgets.ts'
   import type { Orbit } from '../lib/sim/types.ts'
@@ -35,6 +36,7 @@
 <fieldset>
   <legend>{text.orbitLabel}</legend>
   <p class="note">{text.orbitIntro}</p>
+  <LockNote path="design.orbitId" />
   {#each catalog.orbits as orbit (orbit.id)}
     <OptionCard
       type="radio"
@@ -44,6 +46,7 @@
       why={orbit.why_it_matters}
       facts={facts(orbit)}
       selected={game.design.orbitId === orbit.id}
+      locked={!game.canEdit('design.orbitId')}
       onselect={() => (game.design.orbitId = orbit.id)}
     />
   {/each}

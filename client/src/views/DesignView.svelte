@@ -2,6 +2,7 @@
   // Step 4: build the mission. Three tabs, one for each segment the player
   // designs: the spacecraft, the launch and the ground stations.
   import { catalog } from '../lib/content/index.ts'
+  import LockNote from '../lib/components/LockNote.svelte'
   import OptionCard from '../lib/components/OptionCard.svelte'
   import RequirementList from '../lib/components/RequirementList.svelte'
   import type {
@@ -126,6 +127,7 @@
       <fieldset>
         <legend>{text.slots[slot].name}</legend>
         <p class="note">{text.slots[slot].text}</p>
+        <LockNote path="design.{key}" />
         {#each catalog.components.filter((part) => part.category === category) as part (part.id)}
           <OptionCard
             type="radio"
@@ -137,6 +139,7 @@
             facts={facts(part)}
             selected={design[key] === part.id}
             reason={fitReason(part)}
+            locked={!game.canEdit(`design.${key}`)}
             onselect={() => (design[key] = part.id)}
           />
         {/each}
@@ -147,6 +150,7 @@
             title={uiText.none}
             description={uiText.noneDescription}
             selected={design[key] === null}
+            locked={!game.canEdit(`design.${key}`)}
             onselect={() => (design[key] = null)}
           />
         {/if}
@@ -156,6 +160,7 @@
     <fieldset>
       <legend>{text.slots.radios.name}</legend>
       <p class="note">{text.slots.radios.text}</p>
+      <LockNote path="design.radioIds" />
       {#each radios as part (part.id)}
         <OptionCard
           type="checkbox"
@@ -167,6 +172,7 @@
           facts={facts(part)}
           selected={design.radioIds.includes(part.id)}
           reason={fitReason(part)}
+          locked={!game.canEdit('design.radioIds')}
           onselect={() => toggle('radioIds', part.id)}
         />
       {/each}
@@ -175,6 +181,7 @@
     <fieldset>
       <legend>{text.slots.instruments.name}</legend>
       <p class="note">{text.slots.instruments.text}</p>
+      <LockNote path="design.instrumentIds" />
       {#each catalog.instruments as part (part.id)}
         <OptionCard
           type="checkbox"
@@ -186,13 +193,21 @@
           facts={facts(part)}
           selected={design.instrumentIds.includes(part.id)}
           reason={part.compatible_objectives.includes(objectiveId) ? fitReason(part) : (part.limitation ?? text.cannotServe)}
+          locked={!game.canEdit('design.instrumentIds')}
           onselect={() => toggle('instrumentIds', part.id)}
         />
       {/each}
 
       <label class="field">
         <span>{text.imagingLabel}: <strong>{fillTemplate(text.imagingValue, { minutes: design.imagingMinutesPerDay })}</strong></span>
-        <input type="range" min="0" max={imagingMax} step="1" disabled={!mission} bind:value={design.imagingMinutesPerDay} />
+        <input
+          type="range"
+          min="0"
+          max={imagingMax}
+          step="1"
+          disabled={!mission || !game.canEdit('design.imagingMinutesPerDay')}
+          bind:value={design.imagingMinutesPerDay}
+        />
       </label>
       <p class="note">
         {mission ? fillTemplate(text.imagingHelp, { max: imagingMax }) : text.imagingNeedsOrbit}
@@ -202,6 +217,7 @@
     <fieldset>
       <legend>{text.tabs.launch}</legend>
       <p class="note">{text.launcherIntro}</p>
+      <LockNote path="design.launcherId" />
       {#each catalog.launchers as launcher (launcher.id)}
         <OptionCard
           type="radio"
@@ -213,6 +229,7 @@
           facts={launcherFacts(launcher)}
           selected={design.launcherId === launcher.id}
           reason={launcherReason(launcher)}
+          locked={!game.canEdit('design.launcherId')}
           onselect={() => (design.launcherId = launcher.id)}
         />
       {/each}
@@ -221,6 +238,7 @@
     <fieldset>
       <legend>{text.tabs.ground}</legend>
       <p class="note">{text.stationIntro}</p>
+      <LockNote path="design.groundStations" />
       {#each catalog.groundStations as station (station.id)}
         {@const booked = booking(design, station.id)}
         {@const link = mission?.links.find((entry) => entry.stationId === station.id)}
@@ -233,12 +251,20 @@
           why={station.why_it_matters}
           facts={stationFacts(station)}
           selected={booked !== undefined}
+          locked={!game.canEdit('design.groundStations')}
           onselect={() => toggleStation(station.id)}
         >
           {#if booked}
             <label class="field">
               <span>{fillTemplate(text.passesLabel, { station: station.name })}</span>
-              <input type="number" min="0" max="30" step="0.5" bind:value={booked.passesPerDay} />
+              <input
+                type="number"
+                min="0"
+                max="30"
+                step="0.5"
+                disabled={!game.canEdit('design.groundStations')}
+                bind:value={booked.passesPerDay}
+              />
             </label>
             {#if link}
               <p class="note">{fillTemplate(text.passesOffer, { available: formatNumber(link.availablePassesPerDay) })}</p>

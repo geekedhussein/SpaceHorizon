@@ -7,7 +7,9 @@ listed here by its id.
 
 Status: covers the starter content (build step 1), the physics module (build step 2,
 section 5), the simulation, checks and scoring (build step 3, section 6), and the 3D
-views and single-player interface (build steps 4 and 5, section 7).
+views, the interface, team play, saved designs and the leaderboard (build steps 4 to
+7 and 9, section 7). Mission playback, random events and the tutorial (step 8) are
+not built yet.
 
 ## 1. Estimated content entries
 
@@ -436,7 +438,43 @@ The shapes come from `scene3d/builderModel.ts`, which is unit-tested.
 - **Charts** draw at most 240 points a line. Longer missions show every k-th day
   plus the last. The slider and the day readout use every day.
 - **Solo seed.** Each solo launch draws a fresh seed in the browser. In a room the
-  server will issue it (build step 7).
+  server issues it.
+
+### Team play
+
+The server (`/server`) only relays and guards the room state. It never simulates or
+scores. These are game-design values, not real-world data.
+
+- **Who owns what.** Mission planner: scenario, level, sandbox and orbit. Spacecraft
+  engineer: structure, solar array, battery, computer, attitude control and
+  propulsion. Science lead: instruments and imaging time. Comms and resources:
+  radios, ground stations and the launcher. The launcher sits with "resources"
+  because the launch is the largest single cost; CLAUDE.md does not say who owns it.
+- **Sharing roles.** A player gets the role they ask for if nobody earlier asked for
+  it. The rest go one at a time to whoever holds the fewest, in join order. A solo
+  player holds all four. When a player leaves, the roles are shared out again.
+- **Teamwork score** = players who changed the mission at least once / players in
+  the room at launch. The server sends the two counts with the launch; the client
+  turns them into the score. A room of one player is scored as a solo game.
+- **Ready.** Any accepted change clears every player's "ready", so nobody launches a
+  mission they have not seen.
+- **Moving together.** When one player moves to another step, the whole team moves.
+- **Conflicts.** Each pre-launch problem names the roles whose choices decide it
+  (`CHECK_ROLES` in `net/roles.ts`), so a team can see who has to negotiate.
+- **Seed.** The room's seed is used for a launch, then replaced, so a relaunch gets
+  fresh luck. The seed is not sent to players before the launch.
+- **Server limits** (defaults, in `server/app/config.py`): 50 rooms, 4 players a
+  room, empty rooms dropped after 30 minutes, 16 KB a message, 10 messages a second
+  (bursts of 30), 64 KB a REST request, 20 leaderboard rows.
+- **Saved designs.** A saved design is stored as it was sent and opened by its link
+  (`#design=<id>`). The link holds no account: anyone with it can open the design,
+  and nobody can change it. Ids in a design are not checked against `/content` by
+  the server; the client's "known parts" check catches any that no longer exist.
+- **Leaderboard entries.** One entry per flight (per seed). Sandbox missions and
+  missions that never launched are not ranked. Scores are sent to one decimal.
+- **Leaderboard trust.** Scores are computed in the browser. The server checks only
+  shape, range and size, so a score can be forged. Acceptable for v1 (CLAUDE.md
+  section 2).
 
 ### Game-design decisions that need the team
 

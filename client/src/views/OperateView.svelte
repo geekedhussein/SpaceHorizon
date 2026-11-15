@@ -1,7 +1,9 @@
 <script lang="ts">
   // Step 6: the mission flown, day by day, and the report that explains it.
   import { untrack } from 'svelte'
+  import Leaderboard from '../lib/components/Leaderboard.svelte'
   import LineChart from '../lib/components/LineChart.svelte'
+  import SaveShare from '../lib/components/SaveShare.svelte'
   import RequirementList from '../lib/components/RequirementList.svelte'
   import { game } from '../lib/stores/game.svelte.ts'
   import { describeCause, fillTemplate, formatNumber, uiText } from '../lib/strings/en.ts'
@@ -20,17 +22,46 @@
   const MAX_POINTS = 240
   const SYMBOL = { info: 'i', warning: '!', failure: '✕' } as const
 
+  /** Playback ticks per second, and how long a whole mission takes to play. */
+  const TICKS_PER_S = 10
+  const PLAYBACK_S = 20
+
   let result = $derived(game.result)
   let steps = $derived(result?.steps ?? [])
   let day = $state(1)
+  let playing = $state(false)
 
-  // A new flight starts the timeline again from day 1.
+  // A new flight plays from day 1 to the end.
   $effect(() => {
     void result
     untrack(() => {
       day = 1
+      playing = steps.length > 1
+      onday(1)
     })
   })
+
+  // Playback: move the day forward so the whole mission takes PLAYBACK_S seconds.
+  $effect(() => {
+    if (!playing) return
+    const perTick = Math.max(1, Math.round(steps.length / (PLAYBACK_S * TICKS_PER_S)))
+    const timer = setInterval(() => {
+      day = Math.min(steps.length, day + perTick)
+      onday(day)
+      if (day >= steps.length) playing = false
+    }, 1000 / TICKS_PER_S)
+    return () => clearInterval(timer)
+  })
+
+  function togglePlay() {
+    if (!playing && day >= steps.length) day = 1
+    playing = !playing
+  }
+  function toEnd() {
+    playing = false
+    day = steps.length
+    onday(day)
+  }
   let step = $derived(steps[Math.min(day, steps.length) - 1])
 
   /** Every k-th day, plus the last, so long missions stay light to draw. */
@@ -91,8 +122,24 @@
       <h3>{text.timelineTitle}</h3>
       <label class="field">
         <span>{text.dayLabel}: <strong>{fillTemplate(text.dayValue, { day: step.day })}</strong></span>
-        <input type="range" min="1" max={steps.length} step="1" bind:value={day} oninput={() => onday(day)} />
+        <input
+          type="range"
+          min="1"
+          max={steps.length}
+          step="1"
+          bind:value={day}
+          oninput={() => {
+            playing = false
+            onday(day)
+          }}
+        />
       </label>
+      <div class="playback">
+        <button type="button" class="primary" onclick={togglePlay}>
+          {playing ? text.pause : day >= steps.length ? text.replay : text.play}
+        </button>
+        <button type="button" disabled={day >= steps.length} onclick={toEnd}>{text.toEnd}</button>
+      </div>
       <p class="note">{text.timelineHelp}</p>
       <ul class="dayfacts">
         <li>{fillTemplate(text.dayFacts.altitude, { km: formatNumber(step.altitudeKm) })}</li>
@@ -143,10 +190,17 @@
     </p>
   </section>
 
+  <Leaderboard />
+  <SaveShare />
+
   <p class="note">{fillTemplate(text.seed, { seed: String(result.seed) })}</p>
   <div class="buttons">
     <button type="button" onclick={() => game.go('design')}>{uiText.verify.changeDesign}</button>
-    <button type="button" class="primary" disabled={game.blocked} onclick={() => game.launch()}>{text.relaunch}</button>
+    {#if game.room}
+      <button type="button" class="primary" onclick={() => game.go('verify')}>{uiText.phases.verify.name}</button>
+    {:else}
+      <button type="button" class="primary" disabled={game.blocked} onclick={() => game.launch()}>{text.relaunch}</button>
+    {/if}
   </div>
 {/if}
 
@@ -257,6 +311,10 @@
   a {
     color: #9fd8ff;
     overflow-wrap: anywhere;
+  }
+  .playback {
+    display: flex;
+    gap: 0.5rem;
   }
   .buttons {
     display: flex;

@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   // The game shell: the mission steps across the top, the resource bars always
   // on screen, the current step's panel, and the 3D picture beside it.
   import BuilderView from './lib/components/BuilderView.svelte'
   import OrbitView from './lib/components/OrbitView.svelte'
   import PhaseNav from './lib/components/PhaseNav.svelte'
   import ResourceBars from './lib/components/ResourceBars.svelte'
+  import TeamPanel from './lib/components/TeamPanel.svelte'
   import { resourceBars } from './lib/components/resourceBars.ts'
   import { STEP_S } from './lib/sim/index.ts'
   import { game, PHASES } from './lib/stores/game.svelte.ts'
@@ -30,6 +32,11 @@
   let orbitPlaying = $state(true)
   let bookedStationIds = $derived(game.design.groundStations.map((booking) => booking.stationId))
 
+  // A link with "#design=<id>" opens that saved design.
+  onMount(() => {
+    game.openLinkedDesign()
+  })
+
   let phaseIndex = $derived(PHASES.indexOf(game.phase))
   let panel: HTMLElement
   $effect(() => {
@@ -44,6 +51,7 @@
     <h1>{uiText.appName}</h1>
     <PhaseNav phase={game.phase} canOperate={game.result !== null} onselect={(phase) => game.go(phase)} />
     <span class="level">{uiText.need.levels[game.difficulty].name}</span>
+    <TeamPanel />
   </header>
 
   <ResourceBars {bars} />
@@ -52,6 +60,9 @@
     <main id="panel" class="game-panel" bind:this={panel} tabindex="-1">
       <p class="step">{phaseIndex + 1} / {PHASES.length} · {uiText.phases[game.phase].step}</p>
       <h2>{uiText.phases[game.phase].title}</h2>
+      {#if game.linkStatus}
+        <p class="note" role="status">{game.linkStatus === 'loaded' ? uiText.share.loaded : uiText.share.loadFailed}</p>
+      {/if}
 
       {#if game.phase === 'need'}<NeedView />
       {:else if game.phase === 'concept'}<ConceptView />
@@ -202,7 +213,11 @@
       gap: 0.25rem 0.5rem;
     }
     header :global(nav) {
+      order: 1;
       flex-basis: 100%;
+    }
+    h1 {
+      flex: 1;
     }
     .level {
       display: none;

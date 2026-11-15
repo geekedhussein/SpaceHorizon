@@ -15,16 +15,31 @@
     selected: boolean
     /** Why it cannot be chosen. A chosen item stays removable. */
     reason?: string | null
+    /** In a team, another role's choice: shown, but not changeable. */
+    locked?: boolean
     onselect: () => void
     /** Extra controls shown under a chosen card. */
     children?: Snippet
   }
-  let { type, name, title, badge, description, why, facts = [], selected, reason = null, onselect, children }: Props =
-    $props()
-  let disabled = $derived(reason !== null && !selected)
+  let {
+    type,
+    name,
+    title,
+    badge,
+    description,
+    why,
+    facts = [],
+    selected,
+    reason = null,
+    locked = false,
+    onselect,
+    children,
+  }: Props = $props()
+  let greyed = $derived(reason !== null && !selected)
+  let disabled = $derived(locked || greyed)
 </script>
 
-<div class="card" class:selected class:disabled>
+<div class="card" class:selected class:disabled={greyed} class:locked>
   <label>
     <input {type} {name} checked={selected} {disabled} onchange={onselect} />
     <span class="text">
@@ -76,7 +91,8 @@
     padding: 0.6rem 0.7rem;
     cursor: pointer;
   }
-  .disabled label {
+  .disabled label,
+  .locked label {
     cursor: not-allowed;
   }
   input {

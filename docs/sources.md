@@ -133,3 +133,4 @@ No 3D model files are used. The spacecraft is drawn from simple shapes sized fro
 | Library | Used for | Licence |
 | --- | --- | --- |
 | [three.js](https://threejs.org/) 0.187 | The 3D orbit view and spacecraft builder | MIT |
+| [FastAPI](https://fastapi.tiangolo.com/) 0.163 and [Uvicorn](https://www.uvicorn.org/) 0.54 | The game server: rooms, saved designs, leaderboard | MIT, BSD-3-Clause |
