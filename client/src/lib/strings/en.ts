@@ -4,6 +4,8 @@
 // Rules: plain language, short sentences, and factually correct. Simplify the
 // wording, never the facts.
 
+import type { Cause, CauseId, CheckId, ConstraintCheck, TextValues } from '../sim/types.ts'
+
 export interface Tooltip {
   title: string
   text: string
@@ -107,3 +109,295 @@ export const physicsTooltips = {
 } satisfies Record<string, Tooltip>
 
 export type PhysicsTooltipId = keyof typeof physicsTooltips
+
+// ------------------------------------------------- checks and explanations ---
+
+/**
+ * Fill the {placeholders} in a template. Numbers are written with at most one
+ * decimal (two significant digits below 1), in the reader's number format.
+ */
+export function fillTemplate(template: string, values: TextValues, locale = 'en'): string {
+  return template.replace(/\{(\w+)\}/g, (placeholder, key: string) => {
+    const value = values[key]
+    if (value === undefined) return placeholder
+    if (typeof value === 'string') return value
+    const options =
+      Math.abs(value) < 1 ? { maximumSignificantDigits: 2 } : { maximumFractionDigits: 1 }
+    return new Intl.NumberFormat(locale, options).format(value)
+  })
+}
+
+/** Names for the choices a design cannot launch without. */
+export const slotNames: Record<string, string> = {
+  orbit: 'an orbit',
+  launcher: 'a launcher',
+  structure: 'a structure',
+  computer: 'a computer',
+}
+
+export interface CheckText {
+  title: string
+  /** Shown when the check passes. */
+  ok: string
+  /** Shown when the check is a risk or blocks the launch. */
+  problem: string
+  /** What to change. */
+  fix: string
+}
+
+/** One entry per pre-launch check in /lib/sim/constraints.ts. */
+export const checkTexts = {
+  design_incomplete: {
+    title: 'Design complete',
+    ok: 'The orbit, launcher, structure and computer are all chosen.',
+    problem: 'The design still needs {missing}.',
+    fix: 'Choose each missing item before launch.',
+  },
+  unknown_part: {
+    title: 'Known parts',
+    ok: 'Every part is in the catalogue.',
+    problem: 'These parts are not in the catalogue: {ids}.',
+    fix: 'Remove them and choose parts from the list.',
+  },
+  orbit_not_served: {
+    title: 'Launcher reaches the orbit',
+    ok: '{launcher} flies to this orbit.',
+    problem: '{launcher} does not fly to this orbit.',
+    fix: 'Choose another launcher or another orbit.',
+  },
+  launch_mass: {
+    title: 'Launch mass',
+    ok: 'The spacecraft weighs {massKg} kg. With a {marginPercent}% margin it needs {neededKg} kg. {launcher} can carry {capacityKg} kg to this orbit.',
+    problem: 'The spacecraft weighs {massKg} kg. With a {marginPercent}% margin it needs {neededKg} kg. {launcher} can only carry {capacityKg} kg to this orbit.',
+    fix: 'Remove mass, choose a lower orbit, or choose a bigger launcher.',
+  },
+  cubesat_mass: {
+    title: 'Structure mass limit',
+    ok: 'The spacecraft weighs {massKg} kg. The {structure} may weigh up to {limitKg} kg.',
+    problem: 'The spacecraft weighs {massKg} kg. The {structure} may only weigh {limitKg} kg.',
+    fix: 'Use lighter parts or a larger structure.',
+  },
+  part_fit: {
+    title: 'Parts fit the structure',
+    ok: 'Every part fits the {structure}.',
+    problem: 'These parts are not made for the {structure}: {parts}.',
+    fix: 'Swap them, or choose the structure size they are made for.',
+  },
+  instrument_volume: {
+    title: 'Room for instruments',
+    ok: 'The instruments fill {usedU} of the {sizeU} units of space.',
+    problem: 'The instruments need {usedU} units of space. The structure only has {sizeU}.',
+    fix: 'Carry fewer instruments or choose a larger structure.',
+  },
+  budget: {
+    title: 'Budget',
+    ok: 'The mission costs ${costMusd} million. The budget is ${budgetMusd} million.',
+    problem: 'The mission costs ${costMusd} million. The budget is only ${budgetMusd} million.',
+    fix: 'Look at the biggest costs first: the launch and the ground station passes.',
+  },
+  solar_array: {
+    title: 'Solar array',
+    ok: 'A solar array is fitted.',
+    problem: 'There is no solar array, so nothing makes power.',
+    fix: 'Add a solar array.',
+  },
+  battery: {
+    title: 'Battery',
+    ok: 'A battery is fitted.',
+    problem: 'There is no battery. The spacecraft will lose power in Earth\'s shadow on every orbit.',
+    fix: 'Add a battery.',
+  },
+  radio: {
+    title: 'Radio',
+    ok: 'A radio is fitted.',
+    problem: 'There is no radio, so no data can reach the ground.',
+    fix: 'Add a radio.',
+  },
+  pointing: {
+    title: 'Attitude control',
+    ok: 'The spacecraft can control which way it points.',
+    problem: 'Nothing controls which way the spacecraft points, so it tumbles. It cannot aim a camera or a thruster. Its solar array catches a quarter of the sunlight.',
+    fix: 'Add an attitude control system.',
+  },
+  instrument: {
+    title: 'Instrument for the objective',
+    ok: 'An instrument on board can serve the objective.',
+    problem: 'No instrument on board can serve the objective.',
+    fix: 'Add an instrument that is not greyed out for this objective.',
+  },
+  ground_station: {
+    title: 'Ground station',
+    ok: 'At least one ground station is booked.',
+    problem: 'No ground station is booked, so nobody is listening for the data.',
+    fix: 'Book passes at a ground station.',
+  },
+  station_link: {
+    title: 'Stations can hear the radio',
+    ok: 'Every booked station can hear a radio on board.',
+    problem: 'These stations cannot hear any radio on board: {stations}. They listen on other frequencies.',
+    fix: 'Choose a radio in a band the station receives, or another station.',
+  },
+  station_passes: {
+    title: 'Passes available',
+    ok: 'The orbit gives enough passes over each booked station.',
+    problem: 'You booked {requested} passes a day at {station}. This orbit only gives about {available}.',
+    fix: 'Book fewer passes there, add a station, or change the orbit.',
+  },
+  command_link: {
+    title: 'Command link',
+    ok: 'The team can send commands to the spacecraft.',
+    problem: 'No booked station can send commands to the spacecraft. Without commands it takes no pictures.',
+    fix: 'Carry a two-way radio that a booked station can hear.',
+  },
+  power: {
+    title: 'Power',
+    ok: 'At the end of the mission the solar array still makes {availableW} W in sunlight. The plan needs {neededW} W.',
+    problem: 'At the end of the mission the solar array makes {availableW} W in sunlight. The plan needs {neededW} W plus a {marginPercent}% margin.',
+    fix: 'Use a bigger solar array, image for fewer minutes, or book fewer passes.',
+  },
+  battery_depth: {
+    title: 'Battery depth of discharge',
+    ok: 'Each {eclipseMinutes}-minute eclipse uses {depthPercent}% of the battery. The safe limit is {allowedPercent}%.',
+    problem: 'Each {eclipseMinutes}-minute eclipse uses {depthPercent}% of the battery. The safe limit is {allowedPercent}%.',
+    fix: 'Use a bigger battery.',
+  },
+  data_downlink: {
+    title: 'Data downlink',
+    ok: 'The plan makes {generatedGb} GB a day. The booked passes can carry {capacityGb} GB a day.',
+    problem: 'The plan makes {generatedGb} GB a day. The booked passes can only carry {capacityGb} GB a day.',
+    fix: 'Book more passes, use a faster radio, or take fewer pictures.',
+  },
+  orbit_lifetime: {
+    title: 'Orbit lifetime',
+    ok: 'The orbit lasts the planned {plannedYears} years.',
+    problem: 'Air drag will bring the spacecraft down after about {years} years. The plan is {plannedYears} years.',
+    fix: 'Fly higher, add a thruster, or use a smaller solar array.',
+  },
+} satisfies Record<CheckId, CheckText>
+
+export interface CauseText {
+  /** What happened and why. */
+  text: string
+  /** What to change next time. Empty when nothing needs changing. */
+  fix: string
+}
+
+/** One entry per explanation the simulation can give (see /lib/sim/simulate.ts). */
+export const causeTexts = {
+  not_launched: {
+    text: 'The mission did not launch. Some pre-launch checks are blocked.',
+    fix: 'Go back to the design and fix each blocked check.',
+  },
+  launch_failed: {
+    text: 'The {launcher} rocket failed and the spacecraft was lost. This rocket has succeeded on {successes} of its {attempts} launches.',
+    fix: 'Try again, or choose a launcher with a better record.',
+  },
+  reentered: {
+    text: 'Air drag slowed the spacecraft a little on every orbit. From {altitudeKm} km it sank until it burned up on day {day}.',
+    fix: 'Fly higher, add a thruster, or use a smaller solar array.',
+  },
+  power_lost_array: {
+    text: 'On day {day} the solar array made {availableW} W in sunlight. The always-on parts needed {neededW} W, so the spacecraft shut down.',
+    fix: 'Use a bigger solar array, and add attitude control so it faces the Sun.',
+  },
+  power_lost_battery: {
+    text: 'Every orbit spends {eclipseMinutes} minutes in Earth\'s shadow. The always-on parts need {neededWh} Wh to get through it. The battery holds {capacityWh} Wh, so the spacecraft shut down.',
+    fix: 'Use a bigger battery.',
+  },
+  power_shortage: {
+    text: 'On {days} days the solar array could not power all the planned work. Over the mission the camera did {imagingPercent}% of its planned imaging.',
+    fix: 'Use a bigger solar array, or plan less imaging.',
+  },
+  thruster_off: {
+    text: 'From day {day} there was not enough power to run the thruster. Drag then pulled the orbit down.',
+    fix: 'Use a bigger solar array so the thruster can keep firing.',
+  },
+  thruster_unpointed: {
+    text: 'The thruster was never used. A tumbling spacecraft cannot aim its push.',
+    fix: 'Add an attitude control system.',
+  },
+  propellant_empty: {
+    text: 'The thruster ran out of propellant on day {day}. After that nothing held the orbit up.',
+    fix: 'Fly higher, where there is less drag to cancel.',
+  },
+  no_downlink: {
+    text: 'No data reached the ground. No booked ground station could hear a radio on the spacecraft.',
+    fix: 'Carry a radio in a band that a booked station receives.',
+  },
+  no_instrument: {
+    text: 'The spacecraft carried no instrument, so it made no science data.',
+    fix: 'Add an instrument that serves the objective.',
+  },
+  instrument_unsuitable: {
+    text: 'The {instrument} cannot serve this objective, so its data did not count.',
+    fix: 'Choose an instrument that is not greyed out for this objective.',
+  },
+  no_pointing: {
+    text: 'The spacecraft tumbled, so the camera never pointed steadily at the ground. It took no pictures.',
+    fix: 'Add an attitude control system.',
+  },
+  no_command_link: {
+    text: 'The team could not send commands to the spacecraft, so it took no pictures.',
+    fix: 'Carry a two-way radio that a booked station can hear.',
+  },
+  data_lost: {
+    text: 'The camera made more data than the radio could send. Storage filled up, and {lostGb} GB of pictures were thrown away. That is {percent}% of everything the camera made.',
+    fix: 'Book more passes, use a faster radio, or take fewer pictures.',
+  },
+  eclipse_transmit_blocked: {
+    text: 'Sending data in Earth\'s shadow would use {depthPercent}% of the battery. The safe limit is {allowedPercent}%, so the radio only sent in sunlight.',
+    fix: 'Use a bigger battery to send data on every pass.',
+  },
+  resolution_missed: {
+    text: 'From {altitudeKm} km, one pixel of the {instrument} covers {value} m of ground. The goal was {threshold} m or less.',
+    fix: 'Fly lower, or choose a sharper camera.',
+  },
+  revisit_swath: {
+    text: 'The {instrument} sees a strip {swathKm} km wide. Covering the whole Earth with strips that narrow takes {days} days. The goal was {threshold}.',
+    fix: 'Choose a camera with a wider view.',
+  },
+  revisit_data: {
+    text: 'Pictures from about {returnedMinutes} minutes of imaging a day reached the ground. Covering all land every {threshold} days needs {neededMinutes} minutes a day.',
+    fix: 'Plan more imaging, and make sure the radio can send it all.',
+  },
+  data_downlink_limited: {
+    text: 'About {value} GB of pictures a month reached the ground. The goal was {threshold} GB. The camera took more pictures than the radio could send.',
+    fix: 'Book more passes or use a faster radio.',
+  },
+  data_imaging_limited: {
+    text: 'About {value} GB of pictures a month reached the ground. The goal was {threshold} GB. The camera did not take enough pictures.',
+    fix: 'Plan more minutes of imaging each day.',
+  },
+  event: {
+    text: '{name}: first on day {day}. Times it happened during the mission: {count}.',
+    fix: '',
+  },
+  all_requirements_met: {
+    text: 'The mission met every requirement.',
+    fix: '',
+  },
+} satisfies Record<CauseId, CauseText>
+
+/** The words for one pre-launch check. */
+export function describeCheck(check: ConstraintCheck, locale = 'en'): { title: string; text: string; fix: string } {
+  const entry = checkTexts[check.id]
+  const values = { ...check.values }
+  if (typeof values.missing === 'string') {
+    values.missing = values.missing
+      .split(',')
+      .map((slot) => slotNames[slot] ?? slot)
+      .join(', ')
+  }
+  const problem = check.status !== 'ok'
+  return {
+    title: entry.title,
+    text: fillTemplate(problem ? entry.problem : entry.ok, values, locale),
+    fix: problem ? entry.fix : '',
+  }
+}
+
+/** The words for one explanation in the mission report. */
+export function describeCause(cause: Cause, locale = 'en'): CauseText {
+  const entry = causeTexts[cause.id]
+  return { text: fillTemplate(entry.text, cause.values, locale), fix: entry.fix }
+}

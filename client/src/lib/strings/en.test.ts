@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { physicsTooltips } from './en.ts'
+import { catalog, referenceDesign, scenario } from '../../../tests/content.ts'
+import { simulate } from '../sim/simulate.ts'
+import type { Design, SimulationContext } from '../sim/types.ts'
+import { causeTexts, checkTexts, describeCause, describeCheck, fillTemplate, physicsTooltips } from './en.ts'
+
+function expectPlain(text: string, label: string): void {
+  expect(text.length, label).toBeLessThanOrEqual(280)
+  for (const sentence of text.split(/(?<=[.!?])\s+/)) {
+    expect(sentence.split(/\s+/).length, `${label}: ${sentence}`).toBeLessThanOrEqual(25)
+  }
+}
 
 describe('physics tooltips', () => {
   const entries = Object.entries(physicsTooltips)
@@ -19,5 +29,88 @@ describe('physics tooltips', () => {
         expect(sentence.split(/\s+/).length, `${id}: ${sentence}`).toBeLessThanOrEqual(25)
       }
     }
+  })
+})
+
+describe('fillTemplate', () => {
+  it('fills slots and rounds numbers for reading', () => {
+    expect(fillTemplate('{a} kg of {b}', { a: 3.8216, b: 'mass' })).toBe('3.8 kg of mass')
+    expect(fillTemplate('{a}', { a: 0.00761 })).toBe('0.0076')
+    expect(fillTemplate('{a}', { a: 12345.67 })).toBe('12,345.7')
+  })
+
+  it('leaves an unknown slot visible, so a test can catch it', () => {
+    expect(fillTemplate('{missing}', {})).toBe('{missing}')
+  })
+})
+
+describe('check and explanation texts', () => {
+  it('keeps every template short, in short sentences', () => {
+    for (const [id, entry] of Object.entries(checkTexts)) {
+      expect(entry.title.trim(), id).not.toBe('')
+      for (const text of [entry.ok, entry.problem, entry.fix]) expectPlain(text, id)
+    }
+    for (const [id, entry] of Object.entries(causeTexts)) {
+      expect(entry.text.trim(), id).not.toBe('')
+      expectPlain(entry.text, id)
+      expectPlain(entry.fix, id)
+    }
+  })
+
+  it('fills every slot from real simulation runs', () => {
+    const vegetation = scenario('vegetation-monthly')
+    // TEST FIXTURE, not real data: an event that always happens.
+    const events = [
+      { id: 'test', name: 'Test storm', probability_per_year: 1, effect: { kind: 'array_damage' as const, power_loss_fraction: 0.2 } },
+    ]
+    const runs: [Partial<Design>, Partial<SimulationContext>][] = [
+      [{}, {}],
+      [{}, { difficulty: 'trade-study', events }],
+      [{ orbitId: null, computerId: null, batteryId: 'made-up' }, {}],
+      [{ orbitId: 'iss-like' }, {}],
+      [{ launcherId: 'electron' }, {}],
+      [{ launcherId: 'electron', orbitId: 'landsat-705' }, { sandbox: true }],
+      [{ propulsionId: null }, {}],
+      [{ solarArrayId: 'solar-panel-3u-endurosat' }, {}],
+      [{ solarArrayId: 'solar-deployable-6u-endurosat' }, {}],
+      [{ batteryId: null }, {}],
+      [{ solarArrayId: null }, {}],
+      [{ attitudeControlId: null }, {}],
+      [{ radioIds: ['radio-sband-endurosat'] }, {}],
+      [{ radioIds: ['radio-xband-endurosat'] }, {}],
+      [{ radioIds: ['radio-uhf-endurosat'] }, {}],
+      [{ radioIds: [], groundStations: [] }, {}],
+      [{ instrumentIds: [] }, {}],
+      [{ instrumentIds: ['imager-gecko'] }, {}],
+      [{ instrumentIds: ['imager-multiscape100'] }, {}],
+      [{ instrumentIds: ['imager-multiscape50', 'imager-multiscape100', 'imager-gecko'] }, {}],
+      [{ imagingMinutesPerDay: 40 }, {}],
+      [{ imagingMinutesPerDay: 200 }, {}],
+      [{ groundStations: [{ stationId: 'station-svalbard', passesPerDay: 30 }] }, {}],
+    ]
+    const seenChecks = new Set<string>()
+    const seenCauses = new Set<string>()
+    for (const [patch, context] of runs) {
+      const result = simulate({ ...referenceDesign(), ...patch }, vegetation, 1, {
+        catalog,
+        difficulty: 'concept',
+        ...context,
+      })
+      for (const check of result.checks) {
+        const { title, text, fix } = describeCheck(check)
+        if (check.status !== 'ok') seenChecks.add(check.id)
+        for (const part of [title, text, fix]) expect(part, check.id).not.toMatch(/[{}]|NaN|undefined|null/)
+      }
+      for (const cause of result.causes) {
+        const { text, fix } = describeCause(cause)
+        seenCauses.add(cause.id)
+        for (const part of [text, fix]) expect(part, cause.id).not.toMatch(/[{}]|NaN|undefined|null/)
+      }
+    }
+    // Most texts are exercised by the runs above; list what is not, so a new
+    // text without a run is noticed.
+    const unseen = (all: object, seen: Set<string>) => Object.keys(all).filter((id) => !seen.has(id))
+    expect(unseen(checkTexts, seenChecks)).toEqual(['launch_mass', 'cubesat_mass', 'battery_depth'])
+    expect(unseen(causeTexts, seenCauses)).toEqual(['launch_failed', 'propellant_empty', 'eclipse_transmit_blocked'])
   })
 })
