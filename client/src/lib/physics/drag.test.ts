@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { EARTH_TROPICAL_YEAR_S, SOLAR_DAY_S } from './constants.ts'
-import { atmosphericDensityKgM3, orbitDecay, periodDecayRate } from './drag.ts'
+import { EARTH_GM_M3_S2, EARTH_TROPICAL_YEAR_S, SOLAR_DAY_S } from './constants.ts'
+import { atmosphericDensityKgM3, dragForceN, orbitDecay, periodDecayRate } from './drag.ts'
+import { circularSpeedMS, orbitalPeriodS } from './orbit.ts'
 import { M_PER_KM } from './units.ts'
 
 // The worked example printed in the IPS paper: 100 kg, effective area 1 m^2,
@@ -83,5 +84,27 @@ describe('orbit decay', () => {
   it('gives the same answer every time', () => {
     const options = { ...example, altitudeM: 350 * M_PER_KM }
     expect(orbitDecay(options)).toEqual(orbitDecay(options))
+  })
+})
+
+describe('drag force', () => {
+  it('gives the paper\'s period-decay rate through the orbit\'s energy', () => {
+    // Energy E = -GM m / (2a) falls at F v, so da/dt = -2 a^2 F v / (GM m),
+    // and P ~ a^(3/2) gives dP/dt = (3/2) (P / a) da/dt = -3 P a F v / (GM m).
+    const a = 6.8e6
+    const density = 3e-12
+    const effectiveAreaM2 = 0.18
+    const massKg = 4
+    const v = circularSpeedMS(a)
+    const force = dragForceN(density, v, effectiveAreaM2)
+    const fromEnergy = (3 * orbitalPeriodS(a) * a * force * v) / (EARTH_GM_M3_S2 * massKg)
+    expect(fromEnergy / periodDecayRate(a, density, effectiveAreaM2, massKg)).toBeCloseTo(1, 12)
+  })
+
+  it('is a few micronewtons for a small spacecraft at 500 km', () => {
+    const density = atmosphericDensityKgM3(500 * M_PER_KM, { f107Sfu: 125, ap: 13 })
+    const force = dragForceN(density, 7613, 0.18)
+    expect(force).toBeGreaterThan(1e-6)
+    expect(force).toBeLessThan(1e-5)
   })
 })

@@ -70,6 +70,16 @@ export function periodDecayRate(
   return (3 * Math.PI * semiMajorAxisM * densityKgM3 * effectiveAreaM2) / massKg
 }
 
+/**
+ * Drag force on the spacecraft: F = (1/2) rho v^2 A_e, with A_e the effective
+ * area (cross-section times drag coefficient). This is the standard drag
+ * equation; the paper's period-decay rate follows from it, because the work
+ * done by drag, F v, lowers the orbit's energy -GM m / (2a).
+ */
+export function dragForceN(densityKgM3: number, speedMS: number, effectiveAreaM2: number): number {
+  return 0.5 * densityKgM3 * speedMS ** 2 * effectiveAreaM2
+}
+
 export interface OrbitDecay {
   /** Time until re-entry, or null if the orbit outlasts `maxDurationS`. */
   lifetimeS: number | null
