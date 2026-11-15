@@ -1,0 +1,5 @@
+# Versions current on 2026-11-15. One reason per package:
+fastapi==0.163.1            # REST and WebSocket endpoints
+uvicorn[standard]==0.54.0   # the server process (always exactly one worker)
+pytest==9.2.0               # tests
+httpx==0.28.1               # needed by FastAPI's test client
