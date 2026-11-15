@@ -321,9 +321,11 @@ for Sun-synchronous orbits, since that orbit type does not exist without it.
   /src
     /lib
       /sim          pure simulation, PRNG, constraint checks, scoring (no Svelte imports)
-      /physics      pure, sourced equations and constants.ts (orbit, power, link, propulsion)
+      /physics      pure, sourced equations and constants.ts (orbit, power, link, propulsion,
+                    coverage, thermal, drag)
       /orbit        Kepler propagation and reference frames (pure)
       /content      schema and cross-reference test for /content (typed access later)
+      /strings      all user-facing text, one file per language (en.ts first)
       /scene3d      Three.js scenes: builder, orbit view, playback; asset loading
       /net          WebSocket client, patch apply, reconnect
       /stores       Svelte stores: design, room, ui
