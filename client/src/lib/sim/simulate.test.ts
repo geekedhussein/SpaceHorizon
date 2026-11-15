@@ -104,7 +104,7 @@ describe('the reference mission', () => {
     expect(value(result, 'revisit_days')).toBeGreaterThan(25)
     expect(value(result, 'revisit_days')).toBeLessThanOrEqual(30)
     expect(value(result, 'ground_resolution_m')).toBeCloseTo(30, 6)
-    expect(value(result, 'data_returned_gb_per_month')).toBeGreaterThan(2000)
+    expect(value(result, 'data_returned_gb_per_month')).toBeGreaterThan(1000)
     expect(value(result, 'data_returned_gb_per_month')).toBeLessThan(2200)
     expect(value(result, 'lifetime_years')).toBe(2)
     expect(causeIds(result)).toEqual(['all_requirements_met'])
@@ -161,8 +161,8 @@ describe('designs that go wrong, and why', () => {
   })
 
   it('launches an over-budget design in sandbox mode only', () => {
-    expect(run({ launcherId: 'electron' }).outcome.status).toBe('not_launched')
-    const sandbox = run({ launcherId: 'electron' }, { sandbox: true })
+    expect(run({ launcherId: 'firefly-alpha' }).outcome.status).toBe('not_launched')
+    const sandbox = run({ launcherId: 'firefly-alpha' }, { sandbox: true })
     expect(sandbox.outcome.status).toBe('completed')
     expect(sandbox.sandbox).toBe(true)
     expect(sandbox.score.total).toBeLessThan(run().score.total)
@@ -236,10 +236,33 @@ describe('designs that go wrong, and why', () => {
     expect(met(result, 'revisit_days')).toBe(false)
   })
 
-  it('misses the resolution from a higher orbit', () => {
-    const result = run({ orbitId: 'landsat-705', launcherId: 'electron' }, { sandbox: true })
+  it('sees less detail from a higher orbit', () => {
+    const design = { ...referenceDesign(), orbitId: 'landsat-705', launcherId: 'electron' }
+    const result = simulate(design, vegetation, 1, { catalog, difficulty: 'concept' })
     expect(value(result, 'ground_resolution_m')).toBeCloseTo(30 * (705 / 500), 6)
-    expect(causeIds(result)).toContain('resolution_missed')
+    expect(met(result, 'ground_resolution_m')).toBe(true)
+
+    // TEST FIXTURE: the same scenario asking for 30 m, which 705 km cannot give.
+    const sharp = {
+      ...vegetation,
+      requirements: vegetation.requirements.map((entry) =>
+        entry.metric === 'ground_resolution_m' ? { ...entry, threshold: 30 } : entry,
+      ),
+    }
+    const missed = simulate(design, sharp, 1, { catalog, difficulty: 'concept' })
+    expect(causeIds(missed)).toContain('resolution_missed')
+  })
+
+  it('offers more than one orbit that meets every requirement', () => {
+    const higher = run({
+      orbitId: 'sentinel2-786',
+      launcherId: 'electron',
+      propulsionId: null,
+      groundStations: [{ stationId: 'station-fairbanks', passesPerDay: 4 }],
+      imagingMinutesPerDay: 80,
+    })
+    expect(higher.requirements.every((entry) => entry.met)).toBe(true)
+    expect(higher.checks.every((check) => check.status !== 'blocked')).toBe(true)
   })
 
   it('images too little or too much', () => {

@@ -89,11 +89,11 @@ describe('pre-launch checks', () => {
   })
 
   it('blocks a mission over budget', () => {
-    expect(check({ launcherId: 'electron' }).status('budget')).toBe('blocked')
+    expect(check({ launcherId: 'firefly-alpha' }).status('budget')).toBe('blocked')
   })
 
   it('only warns in sandbox mode', () => {
-    const { status, checks } = check({ launcherId: 'electron' }, 'concept', true)
+    const { status, checks } = check({ launcherId: 'firefly-alpha' }, 'concept', true)
     expect(status('budget')).toBe('risk')
     expect(isBlocked(checks)).toBe(false)
     // An unfinished design still cannot fly.

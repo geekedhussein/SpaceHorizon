@@ -68,7 +68,7 @@ describe('check and explanation texts', () => {
       [{}, { difficulty: 'trade-study', events }],
       [{ orbitId: null, computerId: null, batteryId: 'made-up' }, {}],
       [{ orbitId: 'iss-like' }, {}],
-      [{ launcherId: 'electron' }, {}],
+      [{ launcherId: 'firefly-alpha' }, {}],
       [{ launcherId: 'electron', orbitId: 'landsat-705' }, { sandbox: true }],
       [{ propulsionId: null }, {}],
       [{ solarArrayId: 'solar-panel-3u-endurosat' }, {}],
@@ -109,8 +109,8 @@ describe('check and explanation texts', () => {
     }
     // Most texts are exercised by the runs above; list what is not, so a new
     // text without a run is noticed.
-    const unseen = (all: object, seen: Set<string>) => Object.keys(all).filter((id) => !seen.has(id))
-    expect(unseen(checkTexts, seenChecks)).toEqual(['launch_mass', 'cubesat_mass', 'battery_depth'])
-    expect(unseen(causeTexts, seenCauses)).toEqual(['launch_failed', 'propellant_empty', 'eclipse_transmit_blocked'])
+    const unseen = (all: object, seen: Set<string>) => Object.keys(all).filter((id) => !seen.has(id)).sort()
+    expect(unseen(checkTexts, seenChecks)).toEqual(['battery_depth', 'cubesat_mass', 'launch_mass'])
+    expect(unseen(causeTexts, seenCauses)).toEqual(['eclipse_transmit_blocked', 'launch_failed', 'propellant_empty', 'resolution_missed'])
   })
 })

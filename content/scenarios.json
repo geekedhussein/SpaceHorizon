@@ -6,7 +6,7 @@
     "objective_id": "vegetation-mapping",
     "summary": "Farmers and scientists want a fresh map of plant health for all land on Earth, every month.",
     "objective": "Measure plant health over all land once a month. Healthy plants absorb red light and reflect near-infrared light, so the camera must record both.",
-    "budget_musd": 10,
+    "budget_musd": 12,
     "planned_lifetime_years": 2,
     "requirements": [
       {
@@ -20,19 +20,19 @@
       },
       {
         "id": "resolution",
-        "label": "Show details 30 m across or smaller",
+        "label": "Show details 50 m across or smaller",
         "metric": "ground_resolution_m",
         "comparator": "<=",
-        "threshold": 30,
+        "threshold": 50,
         "unit": "m",
         "why_it_matters": "Each pixel of the picture covers a square of ground. Smaller pixels show smaller fields and forest patches. Flying higher makes each pixel cover more ground."
       },
       {
         "id": "data",
-        "label": "Send at least 2,000 GB of pictures to the ground each month",
+        "label": "Send at least 1,000 GB of pictures to the ground each month",
         "metric": "data_returned_gb_per_month",
         "comparator": ">=",
-        "threshold": 2000,
+        "threshold": 1000,
         "unit": "GB per month",
         "why_it_matters": "Pictures are only useful once they reach the ground. The radio and the ground stations set how much data gets down."
       },
@@ -52,6 +52,6 @@
     "source": "https://science.nasa.gov/mission/landsat-9",
     "retrieved": "2026-11-15",
     "estimated": true,
-    "estimate_basis": "The 30 m threshold matches Landsat 9's main camera. The 30-day revisit, 2-year lifetime and US$10 million budget are game-design values. The 2,000 GB threshold is derived: one map of all land (148.94 million km2) at 30 m pixels, in the 8 colour bands the suitable cameras record, at 12 bits per pixel, uncompressed, is 1,986 GB, rounded to 2,000. It was 500 GB (two bands) before the simulation existed; the cameras in the game always record all 8 bands, so the old figure did not match a full map."
+    "estimate_basis": "The 30-day revisit, 50 m resolution, 2-year lifetime and US$12 million budget are game-design values. The 1,000 GB threshold is derived: one map of all land (148.94 million km2) at 42.3 m pixels, in the 8 colour bands the suitable cameras record, at 12 bits per pixel, uncompressed, is 999 GB, rounded to 1,000. 42.3 m is the pixel size of the game's 30 m camera when flown at Landsat's 705 km. Earlier values (30 m, 2,000 GB, US$10 million) let only one orbit pass and were loosened by the team on 2026-11-15."
   }
 ]

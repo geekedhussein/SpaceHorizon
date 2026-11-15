@@ -58,14 +58,16 @@ game and may change during balancing.
   number of colour bands and sharpness.
 - **`tier`** (simple or advanced) on components and instruments.
 - **Scenario `vegetation-monthly`**:
-  - `budget_musd` = 10 and `planned_lifetime_years` = 2.
+  - `budget_musd` = 12 and `planned_lifetime_years` = 2.
   - Revisit threshold of 30 days ("monthly").
-  - Resolution threshold of 30 m, matching Landsat 9's main camera.
-  - Data threshold of 2,000 GB per month. Derivation: all land on Earth
-    (148.94 million km2) x 1,111 pixels per km2 at 30 m x 8 bands x 12 bits =
-    1,986 GB, uncompressed, rounded to 2,000. The threshold was 500 GB (two bands)
-    before the simulation existed. The cameras in the game always record all 8 bands,
-    so 500 GB did not correspond to a full map.
+  - Resolution threshold of 50 m.
+  - Data threshold of 1,000 GB per month. Derivation: all land on Earth
+    (148.94 million km2) at 42.3 m pixels x 8 bands x 12 bits = 999 GB,
+    uncompressed, rounded to 1,000. 42.3 m is the pixel size of the game's 30 m
+    camera flown at Landsat's 705 km.
+  - History: the first values were 30 m, 2,000 GB (a full map at 30 m) and US$10
+    million. With them only the 500 km orbit could pass, so the team loosened them on
+    15 Nov 2026. Now all three sun-synchronous orbits can pass.
 - **Difficulty margins** (`sim/parameters.ts`). Spare launch capacity and spare solar
   power required: 0% at Concept, 10% at Trade study, 20% at Point design. Random event
   chances are multiplied by 0, 1 and 2.
